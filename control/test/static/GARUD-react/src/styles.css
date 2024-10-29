@@ -1,0 +1,127 @@
+
+
+.odin-server {
+  padding-top:15px;
+  padding-bottom:0px;
+  width:100%;
+  margin-left:0px;
+  margin-bottom:0px;
+}
+
+.container{
+  max-width: 96%;
+}
+
+.card{
+  margin-bottom: 0px !important;
+}
+
+/* Make the navbar stick at the top of the screen when you scroll down */
+.navbar {
+  z-index: 99;
+  position: sticky;
+  top:0;
+}
+
+.dropdown{
+  display: inline-block
+}
+
+/* formatting for the progress bars*/
+.progress-bar-outer{
+  margin-left:auto;
+  margin-right:auto;
+  position:relative;
+  background-color:#f2f2f2;
+  color:#dee2e6;
+  border-style:solid;
+  border-width: 2px;
+  border-radius: 5px;
+  height:25px;
+  width:80%;
+}
+.progress-bar-inner{
+  position:absolute;
+  border-radius:5px;
+  height:21px;
+}
+.progress-bar-text{
+  position:relative;
+  text-align:center;
+  color:#050505;
+  font-weight: bold;
+  font-style:italic;
+}
+
+.wrap-and-compress{
+  flex-direction: row;
+  flex-wrap: wrap;
+  display:flex;
+  align-items:stretch;
+  justify-content: left;
+  gap:1%;
+  width:100%;
+}
+.grid{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-column-gap: 10px;
+  grid-row-gap: 10px;
+}
+
+.box {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.textInput{
+  width:10%;
+  flex-grow: 1;
+  flex-shrink: 1;
+  border-color:#dee2e6; 
+  border-style:solid;
+  border-width:1px;
+  border-radius:5px;
+  transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+
+
+/*Hide up and down arrows on number inputs*/
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+input[type=number] {
+    -moz-appearance:textfield; /* Firefox */
+    appearance: textfield;
+}
+
+.overlay{
+  background-color:rgba(0,0,0,0);; 
+  position:absolute; 
+  width:calc(100% - 2rem); 
+  height:calc(100% - 41px - 2rem); 
+  z-index:55;
+}
+
+/* formatting for displaying the jsons with strings, numbers, booleans and brackets different colours. */
+.string{
+  color:brown;
+}
+.number{
+  color:mediumaquamarine;
+}
+.bracket{
+  color:darkgoldenrod;
+}
+.bool{
+  color:blue;
+}
+.null{
+  color:red;
+}
