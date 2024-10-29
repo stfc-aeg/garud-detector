@@ -219,14 +219,15 @@ const DAC = React.forwardRef((props,ref) =>
       inputRef.current.value = Number(inputRef.current.value).toString(2);
     }
   }
-
+  
   //prevents most keys from having an effect, except: the keys 0 and 1, the keys 2-9, when we are accepting denary inputs, 
   //the backspace key, the delete key and the left and right arrow keys.
   function preventNonNumericCharacters(event) {
+    var whitelist = [8, 12, 33, 34, 35, 36, 37, 38, 39, 40, 46,]
     var e = event || window.event;  
-    var key = e.keyCode || e.which;
+    var key = e.keyCode || e. which;
     if (numberType == "Binary"){
-      if ((key < 48 || key > 49)&&(key != 8)&&(key != 46)&&(key != 37)&&(key != 39)) {
+      if ((key < 48 || key > 49)&& !whitelist.includes(key)) {
         if (e.preventDefault){
           e.preventDefault();
         } 
@@ -240,7 +241,7 @@ const DAC = React.forwardRef((props,ref) =>
         } 
         e.returnValue = false; 
       }
-    }
+    } 
   }
 
   function getValue(){
@@ -443,12 +444,11 @@ function ResetDACs(periodicEndpoint){
 }
 
 //Save the current configuration of the toggles to localstorage, under the name currently in the input field (default config)
-function saveConfig(){
+function saveConfig(endpoint){
+  var path = ["application", "gpio_direct"]
   var configDict = {}
   for (let toggle of toggleRefs){
-    if (toggle.ref.current != null){
-      configDict[toggle.name] = Number(toggle.ref.current.props.checked);
-    }
+    configDict[toggle.name] = getNested(endpoint.data, path)[toggle.name];
   }
 
   configs[saveInputRef.current.value] = configDict;
@@ -461,7 +461,7 @@ function GetSaveLoadBar([loadInput, setLoadInput], endpoint){
   return <div style={{float:"right"}}>
     <div style={{marginRight:"20px", display:"inline-block"}}>
       <TitleCard title="Save">
-      <input onClick={saveConfig} style={{display:"inline-block",  height:"38px", width:"47%", color:"white", backgroundColor:"#0d6efd", borderColor:"#0d6efd", borderStyle:"solid", borderRadius:"5px"}} type="button" value="Save configuration as"/>&nbsp;
+      <input onClick={() => saveConfig(endpoint)} style={{display:"inline-block",  height:"38px", width:"47%", color:"white", backgroundColor:"#0d6efd", borderColor:"#0d6efd", borderStyle:"solid", borderRadius:"5px"}} type="button" value="Save configuration as"/>&nbsp;
         <input className="textInput" ref={saveInputRef} style={{display:"inline-block",  height:"38px", width:"51%"}} type="text" defaultValue="config"/>
         
       </TitleCard>
