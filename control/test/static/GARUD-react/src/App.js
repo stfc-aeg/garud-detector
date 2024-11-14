@@ -1,12 +1,13 @@
 import { useState, useEffect, createRef, useImperativeHandle, useRef, forwardRef } from "react";
 import React from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { OdinApp, useAdapterEndpoint, WithEndpoint, DropdownSelector, TitleCard,} from 'odin-react';
+import { OdinApp, useAdapterEndpoint, DropdownSelector, TitleCard, WithEndpoint,} from 'odin-react';
 import 'odin-react/dist/index.css';
 import './styles.css';
 import Container from 'react-bootstrap/Container';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Dropdown from 'react-bootstrap/Dropdown';
+import Button from 'react-bootstrap/Button';
 import Switch from "react-switch";
 //import fs from "fs";
 
@@ -46,6 +47,11 @@ if (configs == null || configs == undefined){
   configs = {};
 }
 
+var SRConfigs = [];
+var readoutConfigs = [];
+
+const EndpointButton = WithEndpoint(Button);
+
 //List of which toggles are inputs
 const debugInputList = [
   "zinq_adc_sr_clk_debug_0",
@@ -76,20 +82,22 @@ const ToggleSwitch = forwardRef((props, ref) => {
     onClick(event)
   }
   return <InputGroup.Text>
-          <label id={id} style={{fontSize:"1.02vw", marginRight: "4px"}}>
-      {label}:
-    </label>
-    <div style={{height:"1px", width:"5000px"}}></div>
+  <p id="label" style={{fontSize:"1.00vw"}}>
+    {label}
+  </p>
+  <div style={{width:"55px"}}>
+    <div style={{width:"100000px", height:"1px"}}></div>
     <div style={{float:"right"}}>
     <Switch
-        ref={ref}
-        checked={ischecked} onChange={toggle} disabled={disabled}
-        onColor="#86d3ff" onHandleColor="#2693e6" handleDiameter={25}
-        boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)" activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
-        height={20} width={48}
-        aria-labelledby={id} />
+      ref={ref}
+      checked={ischecked} onChange={toggle} disabled={disabled}
+      onColor="#86d3ff" onHandleColor="#2693e6" handleDiameter={25}
+      boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)" activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
+      height={20} width={48}
+    aria-labelledby={id} />
     </div>
-    </InputGroup.Text>
+  </div>
+  </InputGroup.Text>
 })
 
 
@@ -100,11 +108,16 @@ const ToggleSwitch = forwardRef((props, ref) => {
  * @return {JSON}     the section of the parameter tree at the end of 'path'
  */
 function getNested(paramTree, path){
-  var current = paramTree;
-  for (let pathSection of path){
-    var current = current[pathSection];
+  try{
+    var current = paramTree;
+    for (let pathSection of path){
+      var current = current[pathSection];
+    }
+    return current;
   }
-  return current;
+  catch{
+    return {};
+  }
 }
 
 /**
@@ -220,14 +233,14 @@ const DAC = React.forwardRef((props,ref) =>
     }
   }
   
-  //prevents most keys from having an effect, except: the keys 0 and 1, the keys 2-9, when we are accepting denary inputs, 
+  //prevents most keys from having an effect, except: the keys 0 and 1, the keys 2-9 when we are accepting denary inputs, 
   //the backspace key, the delete key and the left and right arrow keys.
   function preventNonNumericCharacters(event) {
     var whitelist = [8, 12, 33, 34, 35, 36, 37, 38, 39, 40, 46,]
     var e = event || window.event;  
     var key = e.keyCode || e. which;
     if (numberType == "Binary"){
-      if ((key < 48 || key > 49)&& !whitelist.includes(key)) {
+      if ((key < 48 || key > 49) && !whitelist.includes(key)) {
         if (e.preventDefault){
           e.preventDefault();
         } 
@@ -363,12 +376,254 @@ function GetDACs(periodicEndpoint){
       })
       
     DACs.push(<>
-      <div style={{display:"inline-block", minWidth:"300px", width:"31%", marginRight:"0.5%", marginLeft:"0.5%", borderWidth:"1px", borderColor:"#dee2e6", borderRadius:"5px", backgroundColor:"#f8f9fa", marginBottom:"5px", borderStyle:"solid", padding:"5px"}}>
+      <div style={{display:"inline-block", minWidth:"300px", width:"32%", marginRight:"0.5%", marginLeft:"0.5%", borderWidth:"1px", borderColor:"#dee2e6", borderRadius:"5px", backgroundColor:"#f8f9fa", marginBottom:"5px", borderStyle:"solid", padding:"5px"}}>
       <DAC ref={DACRefs[DACRefs.length-1].ref} endpoint={periodicEndpoint} accessor={key} pathToDACs={pathToDACs} default={DACDefaults[key.toUpperCase()]}/>
       </div>
       </>);
   }
   return DACs;
+}
+
+//a functional component to display a input box, that only accepts 0 or 1 to edit the value of the register
+const Config = React.forwardRef((props, ref) => {
+  //give the ref passed in two child refs, toggleRef and inputRef (accessed externally 
+  //as input and toggle) so that you can access both the toggle and the input externally
+  const inputRef = useRef();
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current.focus();
+    },
+    get input() {
+        return inputRef.current;
+    },
+    get toggle() {
+        return toggleRef.current;
+    }
+  }));
+  const input = <input style={{float:"right"}} className="textInput" type="number" defaultValue={getValue()} ref={inputRef} onKeyDown={preventNonNumericCharacters} onChange={onChangeInput}></input> 
+  const [repeatTrigger, setRepeatTrigger] = useState(0);
+
+  useEffect(() => {
+    //if the textbox for this config is not in focus (currently selected)
+    if (document.activeElement !== inputRef.current){
+      reload();
+    }
+    //Repeat this process in 1000 milliseconds (repeatTrigger variable is soley used to cause a dependency update in 1000 seconds, causing a rerun of this function.)
+    setTimeout(() => {
+      setRepeatTrigger(repeatTrigger + 1)
+    }, 1000);
+  }, [repeatTrigger])
+
+  
+  //prevents most keys from having an effect, except: the keys 0 and 1, the backspace key, the delete key and the left and right arrow keys.
+  function preventNonNumericCharacters(event) {
+    var whitelist = [8, 12, 33, 34, 35, 36, 37, 38, 39, 40, 46,]
+    var e = event || window.event;  
+    var key = e.keyCode || e. which;
+    if ((key < 48 || key > 49) && !whitelist.includes(key)) {
+      if (e.preventDefault){
+        e.preventDefault();
+      } 
+      e.returnValue = false;
+    } 
+  }
+
+  function getValue(){
+    return getNested(props.endpoint.data, props.pathToConfigs)[props.accessor];
+  }
+
+  //update the currently shown value with the actual value from the parameter tree
+  function reload(){
+    if (inputRef != null)
+      if (inputRef.current.value != getValue()){
+        if (getValue() != null){
+          inputRef.current.value = getValue()?.toString();
+        }
+      }
+  }
+
+  function onChangeInput(event){
+    //if the value in the text box is longer than one character, cut it back down to one character.
+    event.target.value = event.target.value.slice(0, 1);
+    if (event.target.value != ""){
+      //send the inputted value to the adapter, and load the response into the parameter tree
+      props.endpoint.put({[props.accessor]:event.target.value}, props.pathToConfigs.join("/"))
+      .then(response => {
+        props.endpoint.mergeData(response, props.pathToConfigs.join("/"));
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+    }
+  }
+  
+
+  return (
+    <> 
+      <div className="box" 
+        style={{padding:"5px",}}>
+        <div style={{width:"100%"}}> 
+          <p style={{marginBottom:"0px", float:"left"}}>{format_string(props.accessor) + ":"}</p>&nbsp;
+          {input}&nbsp;
+        </div>
+      </div>
+    </>
+  );
+})
+
+
+/**
+ * iterates through all the key-value pairs at pathToConfigs in the parameter tree 
+ * and generate an instance of the Config functional component for each one
+ * @param {adapterEndpoint} periodicEndpoint - the endpoint to update the config values
+ * @returns {[JSX]} - a list of Config components (see Config function above)
+ */
+function GetConfigs(periodicEndpoint){
+  var configs = [];
+  const pathToConfigs = ["application", "configbits"];
+
+  for (let key of Object.keys(getNested(periodicEndpoint.data, pathToConfigs))){
+    //store all the data we need to access this component later
+    SRConfigs.push({
+      "key":key,
+      "ref":createRef()
+    });
+    configs.push(<>
+      <div style={{display:"inline-block", minWidth:"300px", width:"32%", marginRight:"0.5%", marginLeft:"0.5%", borderWidth:"1px", borderColor:"#dee2e6", borderRadius:"5px", backgroundColor:"#f8f9fa", marginBottom:"5px", borderStyle:"solid", padding:"5px"}}>
+        <Config ref={SRConfigs[SRConfigs.length-1].ref} endpoint={periodicEndpoint} accessor={key} pathToConfigs={pathToConfigs} />
+      </div>
+      </>);
+  }
+  return configs;
+}
+
+//a functional component to display 3 input boxes, that each only accepts 0 or 1 to edit the value of the registers
+const ReadoutConfig = React.forwardRef((props, ref) => {
+  //give the ref passed in two child refs, toggleRef and inputRef (accessed externally 
+  //as input and toggle) so that you can access both the toggle and the input externally
+  const inputRef1 = useRef();
+  const inputRef2 = useRef();
+  const inputRef3 = useRef();
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current.focus();
+    },
+    get input1() {
+        return inputRef1.current;
+    },
+    get input2() {
+      return inputRef2.current;
+    },
+    get input3() {
+      return inputRef3.current;
+    },
+  }));
+  const input1 = <input style={{float:"right"}} className="textInput" type="number" defaultValue={getValue("AB_GATE_EN")} ref={inputRef1} onKeyDown={preventNonNumericCharacters} onChange={(event) => onChangeInput(event, "AB_GATE_EN")}></input> 
+  const input2 = <input style={{float:"right"}} className="textInput" type="number" defaultValue={getValue("2_LEVEL_READOUT")} ref={inputRef2} onKeyDown={preventNonNumericCharacters} onChange={(event) => onChangeInput(event, "2_LEVEL_READOUT")}></input> 
+  const input3 = <input style={{float:"right"}} className="textInput" type="number" defaultValue={getValue("BLOCK_ENABLE")} ref={inputRef3} onKeyDown={preventNonNumericCharacters} onChange={(event) => onChangeInput(event, "BLOCK_ENABLE")}></input> 
+  const [repeatTrigger, setRepeatTrigger] = useState(0);
+
+  /*useEffect(() => {
+    //if the textbox for this config is not in focus (currently selected)
+    if (document.activeElement !== inputRef1.current){
+      reload(inputRef1, "AB_GATE_EN");
+    }
+    if (document.activeElement !== inputRef2.current){
+      reload(inputRef2, "2_LEVEL_READOUT");
+    }
+    if (document.activeElement !== inputRef3.current){
+      reload(inputRef3, "BLOCK_ENABLE");
+    }
+    //Repeat this process in 1000 milliseconds (repeatTrigger variable is soley used to cause a dependency update in 1000 seconds, causing a rerun of this function.)
+    setTimeout(() => {
+      setRepeatTrigger(repeatTrigger + 1)
+    }, 1000);
+  }, [repeatTrigger])*/
+
+  
+  //prevents most keys from having an effect, except: the keys 0 and 1, the backspace key, the delete key and the left and right arrow keys.
+  function preventNonNumericCharacters(event) {
+    var whitelist = [8, 12, 33, 34, 35, 36, 37, 38, 39, 40, 46,]
+    var e = event || window.event;  
+    var key = e.keyCode || e. which;
+    if ((key < 48 || key > 49) && !whitelist.includes(key)) {
+      if (e.preventDefault){
+        e.preventDefault();
+      } 
+      e.returnValue = false;
+    } 
+  }
+
+  function getValue(accessor){
+    return getNested(props.endpoint.data, props.pathToConfigs)[props.accessor][accessor];
+  }
+
+  //update the currently shown value with the actual value from the parameter tree
+  function reload(inputRef, accessor){
+    if (inputRef != null)
+      if (inputRef.current.value != getValue(accessor)){
+        inputRef.current.value = getValue(accessor)?.toString();
+      }
+  }
+
+  function onChangeInput(event, accessor){
+    //if the input is more than one character long cut it back down to one character
+    event.target.value = event.target.value.slice(0, 1);
+    if (event.target.value != ""){
+      //send the inputted value to the adapter, and load the response into the parameter tree
+      props.endpoint.put({[accessor]:event.target.value}, props.pathToConfigs.join("/") + "/" + props.accessor)
+      .then(response => {
+        props.endpoint.mergeData(response, props.pathToConfigs.join("/") + "/" + props.accessor);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+    }
+  }
+  
+
+  return (
+    <> 
+      <div className="box" style={{padding:"5px",}}>
+        <p style={{marginBottom:"0px", width:"100%"}}>{format_string(props.accessor) + ":"}</p>
+        <div style={{width:"100%", height:"1px", backgroundColor:"black", marginTop:"2px", marginBottom:"6px"}}></div>
+        <div style={{width:"100%"}}>
+        <p style={{marginBottom:"0px", float:"left"}}>AB_GATE_EN:</p>&nbsp;{input1}
+        </div>
+        <div style={{width:"100%"}}>
+        <p style={{marginBottom:"0px", float:"left"}}>2_LEVEL_READOUT:</p>&nbsp;{input2}
+        </div>
+        <div style={{width:"100%"}}>
+        <p style={{marginBottom:"0px", float:"left"}}>BLOCK_ENABLE:</p>&nbsp;{input3}
+        </div>
+      </div>
+    </>
+  );
+})
+
+/**
+ * iterates through all the key-value pairs at pathToConfigs in the parameter tree 
+ * and generate an instance of the ReadoutConfig functional component for each one
+ * @param {adapterEndpoint} periodicEndpoint - the endpoint to update the ReadoutConfig values
+ * @returns {[JSX]} - a list of Config components (see ReadoutConfig function above)
+ */
+function GetReadoutConfig(periodicEndpoint){
+  var configs = [];
+  const pathToConfigs = ["application", "readoutconfig"];
+
+  for (let key of Object.keys(getNested(periodicEndpoint.data, pathToConfigs))){
+    //store all the data we need to access this component later
+    readoutConfigs.push({
+      "key":key,
+      "ref":createRef()
+    });
+    configs.push(<>
+      <div style={{display:"inline-block", minWidth:"300px", width:"24%", marginRight:"0.5%", marginLeft:"0.5%", borderWidth:"1px", borderColor:"#dee2e6", borderRadius:"5px", backgroundColor:"#f8f9fa", marginBottom:"5px", borderStyle:"solid", padding:"5px"}}>
+        <ReadoutConfig ref={readoutConfigs[readoutConfigs.length-1].ref} endpoint={periodicEndpoint} accessor={key} pathToConfigs={pathToConfigs} />
+      </div>
+      </>);
+  }
+  return configs;
 }
 
 /**
@@ -512,6 +767,53 @@ function changeLoadInput(event, [loadInput, setLoadInput]){
   setLoadInput(event);
 }
 
+function applyReadoutConfig(endpoint){
+
+}
+
+function applySRConfig(endpoint){
+
+}
+
+function applyDACs(endpoint){
+
+}
+
+//Overwrite the values currently in the Config inputs (see config functional component) with the values in the parameter tree
+function resetSRConfig(endpoint){
+  var pathToSRConfigs = ["application", "configbits"]
+  var data = getNested(endpoint.data, pathToSRConfigs);
+  for (let config of SRConfigs){
+    if (config.ref.current != null){
+      config.ref.current.input.value = data[config.key];
+    }
+  }
+}
+
+//Overwrite the values currently in the DAC inputs (see DAC functional component) with the values in the parameter tree
+function resetDACsToValues(endpoint){
+  var pathToDACs = ["application", "dacs"]
+  var data = getNested(endpoint.data, pathToDACs);
+  for (let config of DACRefs){
+    if (config.ref.current != null){
+      config.ref.current.input.value = data[config.key];
+    }
+  }
+}
+
+
+//Overwrite the values currently in the ReadoutConfig inputs (see ReadoutConfig functional component) with the values in the parameter tree
+function resetReadoutConfig(endpoint){
+  var pathToReadoutConfigs = ["application", "readoutconfig"]
+  var data = getNested(endpoint.data, pathToReadoutConfigs);
+  for (let config of readoutConfigs){
+    if (config.ref.current != null){
+      config.ref.current.input1.value = data[config.key]["AB_GATE_EN"];
+      config.ref.current.input2.value = data[config.key]["2_LEVEL_READOUT"];
+      config.ref.current.input3.value = data[config.key]["BLOCK_ENABLE"];
+    }
+  }
+}
 
 export default function App(){
   // create the endpoint to use to contact the adapter, at the address specified in the .env file,
@@ -524,8 +826,20 @@ export default function App(){
 
   return (
     <OdinApp title="GARUD"
-    navLinks={["GPIO Direct", "DACs", "JSON"]}
+    navLinks={["Main", "GPIO Direct", "Configuration", "JSON"]}
     icon_src="odin.png">
+      <Container>
+        <div className="odin-server">
+          <TitleCard title={<><p style={{float:"left"}}>Controls</p></>}>
+            <div className="control">
+              <EndpointButton endpoint={periodicEndpoint} event_type="click" fullpath="enable" value={true}>Enable Power Supplies</EndpointButton>
+              <EndpointButton endpoint={periodicEndpoint} event_type="click" fullpath="disable" value={true}>Disable Power Supplies</EndpointButton>
+              <EndpointButton endpoint={periodicEndpoint} event_type="click" fullpath="defaults" value={true}>Program Defaults</EndpointButton>
+            </div>
+          </TitleCard>
+          <br/>
+        </div>
+      </Container>
       <Container>
         <div className="odin-server">
           <TitleCard title={<><p style={{float:"left"}}>Controls</p>{GetSaveLoadBar([loadInput, setLoadInput], periodicEndpoint)}</>}>
@@ -549,13 +863,30 @@ export default function App(){
       </Container>
       <Container>
         <div className="odin-server">
-          <TitleCard title={<><p style={{float:"left"}} >DACs</p><input onClick={() => ResetDACs(periodicEndpoint)} style={{float:"right", color:"white", backgroundColor:"#0d6efd", borderColor:"#0d6efd", borderStyle:"solid", borderRadius:"5px"}} type="button" value="Reset to defaults"/></>}>
+          <TitleCard title={<><p style={{float:"left"}} >DACs</p><input onClick={() => resetDACsToValues(periodicEndpoint)} style={{float:"right", color:"white", backgroundColor:"#0d6efd", borderColor:"#0d6efd", borderStyle:"solid", borderRadius:"5px"}} type="button" value="Reset to current values"/><input onClick={() => applyDACs(periodicEndpoint)} style={{float:"right", color:"white", backgroundColor:"#0d6efd", borderColor:"#0d6efd", borderStyle:"solid", borderRadius:"5px", marginRight:"5px"}} type="button" value="Apply"/><input onClick={() => ResetDACs(periodicEndpoint)} style={{float:"right", color:"white", backgroundColor:"#0d6efd", borderColor:"#0d6efd", borderStyle:"solid", borderRadius:"5px", marginRight:"5px"}} type="button" value="Reset to defaults"/></>}>
             <div>
             {Object.keys(periodicEndpoint.data).length > 0 ? 
               GetDACs(periodicEndpoint) : 
               <><p style={{color:"red"}}>Error - no data received from adapter:</p><pre style={{color:"red"}}>{JSON.stringify(periodicEndpoint.data, null, " ")}</pre></>}
             </div>
           </TitleCard>
+          <br/>
+          <TitleCard title={<><p style={{float:"left"}}>Configuration Shift-Register</p><input onClick={() => resetSRConfig(periodicEndpoint)} style={{float:"right", color:"white", backgroundColor:"#0d6efd", borderColor:"#0d6efd", borderStyle:"solid", borderRadius:"5px"}} type="button" value="Reset to current values"/><input onClick={() => applySRConfig(periodicEndpoint)} style={{float:"right", color:"white", backgroundColor:"#0d6efd", borderColor:"#0d6efd", borderStyle:"solid", borderRadius:"5px", marginRight:"5px"}} type="button" value="Apply"/></>}>
+            <div>
+            {Object.keys(periodicEndpoint.data).length > 0 ? 
+              GetConfigs(periodicEndpoint) : 
+              <><p style={{color:"red"}}>Error - no data received from adapter:</p><pre style={{color:"red"}}>{JSON.stringify(periodicEndpoint.data, null, " ")}</pre></>}
+            </div>
+          </TitleCard>
+          <br/>
+          <TitleCard title={<><p style={{float:"left"}}>Readout Config</p><input onClick={() => resetReadoutConfig(periodicEndpoint)} style={{float:"right", color:"white", backgroundColor:"#0d6efd", borderColor:"#0d6efd", borderStyle:"solid", borderRadius:"5px"}} type="button" value="Reset to current values"/><input onClick={() => applyReadoutConfig(periodicEndpoint)} style={{float:"right", color:"white", backgroundColor:"#0d6efd", borderColor:"#0d6efd", borderStyle:"solid", borderRadius:"5px", marginRight:"5px"}} type="button" value="Apply"/></>}>
+            <div>
+            {Object.keys(periodicEndpoint.data).length > 0 ? 
+              GetReadoutConfig(periodicEndpoint) : 
+              <><p style={{color:"red"}}>Error - no data received from adapter:</p><pre style={{color:"red"}}>{JSON.stringify(periodicEndpoint.data, null, " ")}</pre></>}
+            </div>
+          </TitleCard>
+          <br/>
         </div>
       </Container>
       <Container>

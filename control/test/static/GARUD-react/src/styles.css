@@ -86,6 +86,27 @@
   transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 }
 
+.control{
+  flex-direction: row;
+  flex-wrap: wrap;
+  display:flex;
+  align-items:stretch;
+  justify-content: center;
+  gap:1%;
+  width:100%;
+}
+
+#label{
+  width:calc(100% - 55px);
+  margin-right: 0px;
+  float:left;
+  justify-content:left;
+  text-align:left;
+  margin-bottom: 0px;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
 
 
 /*Hide up and down arrows on number inputs*/
