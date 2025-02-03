@@ -205,7 +205,7 @@ const DAC = React.forwardRef((props,ref) =>
   //A toggle to determine whether we are showing and inputing binary values or denary values
   const [numberType, setNumberType] = useState("Denary");
   const input = <input className="textInput" type="number" defaultValue={getValue()} ref={inputRef} onKeyDown={preventNonNumericCharacters} onChange={onChangeInput}></input> 
-  const [repeatTrigger, setRepeatTrigger] = useState(0);
+  /*const [repeatTrigger, setRepeatTrigger] = useState(0);
 
   useEffect(() => {
     //if the textbox for this DAC is not in focus (currently selected)
@@ -217,6 +217,19 @@ const DAC = React.forwardRef((props,ref) =>
       setRepeatTrigger(repeatTrigger + 1)
     }, 1000);
   }, [repeatTrigger])
+  
+  //update the currently shown value with the actual value from the parameter tree
+  function reload(){
+    if (inputRef != null)
+      if (inputRef.current.value != getValue() && inputRef.current.value != parseInt(String(getValue()),2)){
+        if (numberType == "Binary"){
+          inputRef.current.value = Number(getValue()).toString(2);
+        }
+        else if (numberType == "Denary"){
+          inputRef.current.value = getValue();
+        }
+      }
+  }*/
 
 //Switch the input between accepting and showing binary numbers and accepting and showing denary numbers
   function toggleNumType(){
@@ -275,18 +288,6 @@ const DAC = React.forwardRef((props,ref) =>
     return value;
   }
 
-  //update the currently shown value with the actual value from the parameter tree
-  function reload(){
-    if (inputRef != null)
-      if (inputRef.current.value != getValue() && inputRef.current.value != parseInt(String(getValue()),2)){
-        if (numberType == "Binary"){
-          inputRef.current.value = Number(getValue()).toString(2);
-        }
-        else if (numberType == "Denary"){
-          inputRef.current.value = getValue();
-        }
-      }
-  }
 
   function onChangeInput(event){
     //Restrict the binary input to 6 digits
@@ -313,7 +314,7 @@ const DAC = React.forwardRef((props,ref) =>
       }
       else if (numberType == "Denary"){
         //send the inputted value to the adapter, and load the response into the parameter tree
-        props.endpoint.put({[props.accessor]:event.target.value}, props.pathToDACs.join("/"))
+        props.endpoint.put({[props.accessor]:Number(event.target.value)}, props.pathToDACs.join("/"))
         .then(response => {
           props.endpoint.mergeData(response, props.pathToDACs.join("/"));
         })
@@ -363,7 +364,7 @@ const DAC = React.forwardRef((props,ref) =>
  */
 function GetDACs(periodicEndpoint){
   var DACs = [];
-  const pathToDACs = ["application", "dacs"];
+  const pathToDACs = ["application", "dacs", "FIELDS"];
 
   for (let key of Object.keys(getNested(periodicEndpoint.data, pathToDACs))){
     //store all the data we need to access this component later so that we can reset it to default if necessary.
@@ -401,7 +402,7 @@ const Config = React.forwardRef((props, ref) => {
     }
   }));
   const input = <input style={{float:"right"}} className="textInput" type="number" defaultValue={getValue()} ref={inputRef} onKeyDown={preventNonNumericCharacters} onChange={onChangeInput}></input> 
-  const [repeatTrigger, setRepeatTrigger] = useState(0);
+  /*const [repeatTrigger, setRepeatTrigger] = useState(0);
 
   useEffect(() => {
     //if the textbox for this config is not in focus (currently selected)
@@ -413,6 +414,16 @@ const Config = React.forwardRef((props, ref) => {
       setRepeatTrigger(repeatTrigger + 1)
     }, 1000);
   }, [repeatTrigger])
+
+  //update the currently shown value with the actual value from the parameter tree
+  function reload(){
+    if (inputRef != null)
+      if (inputRef.current.value != getValue()){
+        if (getValue() != null){
+          inputRef.current.value = getValue()?.toString();
+        }
+      }
+  }*/
 
   
   //prevents most keys from having an effect, except: the keys 0 and 1, the backspace key, the delete key and the left and right arrow keys.
@@ -432,22 +443,12 @@ const Config = React.forwardRef((props, ref) => {
     return getNested(props.endpoint.data, props.pathToConfigs)[props.accessor];
   }
 
-  //update the currently shown value with the actual value from the parameter tree
-  function reload(){
-    if (inputRef != null)
-      if (inputRef.current.value != getValue()){
-        if (getValue() != null){
-          inputRef.current.value = getValue()?.toString();
-        }
-      }
-  }
-
   function onChangeInput(event){
     //if the value in the text box is longer than one character, cut it back down to one character.
     event.target.value = event.target.value.slice(0, 1);
     if (event.target.value != ""){
       //send the inputted value to the adapter, and load the response into the parameter tree
-      props.endpoint.put({[props.accessor]:event.target.value}, props.pathToConfigs.join("/"))
+      props.endpoint.put({[props.accessor]:Number(event.target.value)}, props.pathToConfigs.join("/"))
       .then(response => {
         props.endpoint.mergeData(response, props.pathToConfigs.join("/"));
       })
@@ -480,7 +481,7 @@ const Config = React.forwardRef((props, ref) => {
  */
 function GetConfigs(periodicEndpoint){
   var configs = [];
-  const pathToConfigs = ["application", "configbits"];
+  const pathToConfigs = ["application", "configbits", "FIELDS"];
 
   for (let key of Object.keys(getNested(periodicEndpoint.data, pathToConfigs))){
     //store all the data we need to access this component later
@@ -521,9 +522,9 @@ const ReadoutConfig = React.forwardRef((props, ref) => {
   const input1 = <input style={{float:"right"}} className="textInput" type="number" defaultValue={getValue("AB_GATE_EN")} ref={inputRef1} onKeyDown={preventNonNumericCharacters} onChange={(event) => onChangeInput(event, "AB_GATE_EN")}></input> 
   const input2 = <input style={{float:"right"}} className="textInput" type="number" defaultValue={getValue("2_LEVEL_READOUT")} ref={inputRef2} onKeyDown={preventNonNumericCharacters} onChange={(event) => onChangeInput(event, "2_LEVEL_READOUT")}></input> 
   const input3 = <input style={{float:"right"}} className="textInput" type="number" defaultValue={getValue("BLOCK_ENABLE")} ref={inputRef3} onKeyDown={preventNonNumericCharacters} onChange={(event) => onChangeInput(event, "BLOCK_ENABLE")}></input> 
-  const [repeatTrigger, setRepeatTrigger] = useState(0);
+  /*const [repeatTrigger, setRepeatTrigger] = useState(0);
 
-  /*useEffect(() => {
+  useEffect(() => {
     //if the textbox for this config is not in focus (currently selected)
     if (document.activeElement !== inputRef1.current){
       reload(inputRef1, "AB_GATE_EN");
@@ -534,7 +535,7 @@ const ReadoutConfig = React.forwardRef((props, ref) => {
     if (document.activeElement !== inputRef3.current){
       reload(inputRef3, "BLOCK_ENABLE");
     }
-    //Repeat this process in 1000 milliseconds (repeatTrigger variable is soley used to cause a dependency update in 1000 seconds, causing a rerun of this function.)
+    //Repeat this process in 1000 milliseconds (repeatTrigger variable is solely used to cause a dependency update in 1000 seconds, causing a rerun of this function.)
     setTimeout(() => {
       setRepeatTrigger(repeatTrigger + 1)
     }, 1000);
@@ -569,15 +570,32 @@ const ReadoutConfig = React.forwardRef((props, ref) => {
   function onChangeInput(event, accessor){
     //if the input is more than one character long cut it back down to one character
     event.target.value = event.target.value.slice(0, 1);
-    if (event.target.value != ""){
-      //send the inputted value to the adapter, and load the response into the parameter tree
-      props.endpoint.put({[accessor]:event.target.value}, props.pathToConfigs.join("/") + "/" + props.accessor)
-      .then(response => {
-        props.endpoint.mergeData(response, props.pathToConfigs.join("/") + "/" + props.accessor);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
+
+    if (accessor == "2_LEVEL_READOUT" && event.target.value != ""){
+      for (let config of readoutConfigs){
+        if (config.ref.current != null){
+          config.ref.current.input2.value = event.target.value;
+          props.endpoint.put({[accessor]:Number(event.target.value)}, props.pathToConfigs.join("/") + "/" + config.key)
+          .then(response => {
+            props.endpoint.mergeData(response, props.pathToConfigs.join("/") + "/" + config.key);
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+        }
+      }
+    }
+    else{
+      if (event.target.value != ""){
+        //send the inputted value to the adapter, and load the response into the parameter tree
+        props.endpoint.put({[accessor]:Number(event.target.value)}, props.pathToConfigs.join("/") + "/" + props.accessor)
+        .then(response => {
+          props.endpoint.mergeData(response, props.pathToConfigs.join("/") + "/" + props.accessor);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+      }
     }
   }
   
@@ -609,7 +627,7 @@ const ReadoutConfig = React.forwardRef((props, ref) => {
  */
 function GetReadoutConfig(periodicEndpoint){
   var configs = [];
-  const pathToConfigs = ["application", "readoutconfig"];
+  const pathToConfigs = ["application", "readoutconfig", "FIELDS"];
 
   for (let key of Object.keys(getNested(periodicEndpoint.data, pathToConfigs))){
     //store all the data we need to access this component later
@@ -767,58 +785,238 @@ function changeLoadInput(event, [loadInput, setLoadInput]){
   setLoadInput(event);
 }
 
-function applyReadoutConfig(endpoint){
-
-}
-
-function applySRConfig(endpoint){
-
-}
-
-function applyDACs(endpoint){
-
-}
 
 //Overwrite the values currently in the Config inputs (see config functional component) with the values in the parameter tree
 function resetSRConfig(endpoint){
   var pathToSRConfigs = ["application", "configbits"]
-  var data = getNested(endpoint.data, pathToSRConfigs);
-  for (let config of SRConfigs){
-    if (config.ref.current != null){
-      config.ref.current.input.value = data[config.key];
+  endpoint.put({["RESTORE"]:true}, pathToSRConfigs.join("/"))
+  .then(response => {
+    endpoint.mergeData(response, pathToSRConfigs.join("/"));
+    var data = getNested(endpoint.data, pathToSRConfigs);
+    for (let config of SRConfigs){
+      if (config.ref.current != null){
+        config.ref.current.input.value = data["FIELDS"][config.key];
+      }
     }
-  }
+  })
+  .catch((err) => {
+    console.error(err);
+  })
+
 }
 
 //Overwrite the values currently in the DAC inputs (see DAC functional component) with the values in the parameter tree
 function resetDACsToValues(endpoint){
   var pathToDACs = ["application", "dacs"]
-  var data = getNested(endpoint.data, pathToDACs);
-  for (let config of DACRefs){
-    if (config.ref.current != null){
-      config.ref.current.input.value = data[config.key];
+  endpoint.put({["RESTORE"]:true}, pathToDACs.join("/"))
+  .then(response => {
+    endpoint.mergeData(response, pathToDACs.join("/"));
+    var data = getNested(endpoint.data, pathToDACs);
+    for (let config of DACRefs){
+      if (config.ref.current != null){
+        config.ref.current.input.value = data["FIELDS"][config.key];
+      }
     }
-  }
+  })
+  .catch((err) => {
+    console.error(err);
+  })
 }
 
 
 //Overwrite the values currently in the ReadoutConfig inputs (see ReadoutConfig functional component) with the values in the parameter tree
 function resetReadoutConfig(endpoint){
-  var pathToReadoutConfigs = ["application", "readoutconfig"]
-  var data = getNested(endpoint.data, pathToReadoutConfigs);
-  for (let config of readoutConfigs){
-    if (config.ref.current != null){
-      config.ref.current.input1.value = data[config.key]["AB_GATE_EN"];
-      config.ref.current.input2.value = data[config.key]["2_LEVEL_READOUT"];
-      config.ref.current.input3.value = data[config.key]["BLOCK_ENABLE"];
+  var pathToConfig = ["application", "readoutconfig"]
+  endpoint.put({["RESTORE"]:true}, pathToConfig.join("/"))
+  .then(response => {
+    endpoint.mergeData(response, pathToConfig.join("/"));
+    var data = getNested(endpoint.data, pathToConfig);
+    for (let config of readoutConfigs){
+      if (config.ref.current != null){
+        config.ref.current.input1.value = data["FIELDS"][config.key]["AB_GATE_EN"];
+        config.ref.current.input2.value = data["FIELDS"][config.key]["2_LEVEL_READOUT"];
+        config.ref.current.input3.value = data["FIELDS"][config.key]["BLOCK_ENABLE"];
+      }
     }
+  })
+  .catch((err) => {
+    console.error(err);
+  })
+}
+
+function GetDACButtons(periodicEndpoint){
+  if (Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application.dacs.SYNC_ON_WRITE){
+    return <>
+    {Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application.dacs.SYNC ? 
+      <input onClick={() => resetDACsToValues(periodicEndpoint)} style={{float:"right"}} className="nice-button" type="button" value="Reset to true values"/>  : 
+      <input style={{float:"right"}} className="disabled-button" type="button" disabled value="Reset to true values"/>}
+    {Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application.dacs.SYNC ? 
+      <EndpointButton style={{float:"right", marginRight:"5px"}} endpoint={periodicEndpoint} event_type="click" fullpath="application/dacs/SYNC" value={true}>Apply</EndpointButton> : 
+      <EndpointButton style={{float:"right", marginRight:"5px", backgroundColor:"grey", borderColor:"grey"}} fullpath="application/dacs/SYNC" endpoint={periodicEndpoint} disabled>Apply</EndpointButton>}
+    </>
+  }
+  else{
+    return <></>
   }
 }
 
+function GetSRConfigButtons(periodicEndpoint){
+  if (Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application.configbits.SYNC_ON_WRITE){
+    return <>
+      {Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application.configbits.SYNC ? 
+        <input onClick={() => resetSRConfig(periodicEndpoint)} style={{float:"right"}} className="nice-button" type="button" value="Reset to true values"/>  : 
+        <input style={{float:"right"}} className="disabled-button" type="button" disabled value="Reset to true values"/>}
+      {Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application.configbits.SYNC ? 
+        <EndpointButton style={{float:"right", marginRight:"5px"}} endpoint={periodicEndpoint} event_type="click" fullpath="application/configbits/SYNC" value={true}>Apply</EndpointButton> : 
+        <EndpointButton style={{float:"right", marginRight:"5px", backgroundColor:"grey", borderColor:"grey"}} fullpath="application/configbits/SYNC" endpoint={periodicEndpoint} disabled>Apply</EndpointButton>}
+    </>
+  }
+  else{
+    return <></>
+  }
+}
+
+function GetReadoutConfigButtons(periodicEndpoint){
+  if (Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application.readoutconfig.SYNC_ON_WRITE){
+    return <>
+      {Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application.readoutconfig.SYNC ? 
+        <input onClick={() => resetReadoutConfig(periodicEndpoint)} style={{float:"right"}} className="nice-button" type="button" value="Reset to true values"/>  : 
+        <input style={{float:"right"}} className="disabled-button" type="button" disabled value="Reset to true values"/>}
+      {Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application.readoutconfig.SYNC ? 
+        <EndpointButton style={{float:"right", marginRight:"5px"}} endpoint={periodicEndpoint} event_type="click" fullpath="application/readoutconfig/SYNC" value={true}>Apply</EndpointButton> : 
+        <EndpointButton style={{float:"right", marginRight:"5px", backgroundColor:"grey", borderColor:"grey"}} fullpath="application/readoutconfig/SYNC" endpoint={periodicEndpoint} disabled>Apply</EndpointButton>}
+    </>
+  }
+  else{
+    return <></>
+  }
+}
+
+function get_power_supply(periodicEndpoint, supply){
+  var power_supply = []
+
+  function onToggled(event, path, periodicEndpoint){
+    periodicEndpoint.put({["status"]:event.target.value}, path)
+    .then((response) => {
+      periodicEndpoint.mergeData(response, path);
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+  }
+
+  for (let channel of Object.keys(periodicEndpoint.data.ttipsu["devices"][supply].channels)){
+    power_supply.push(
+      <>
+        <div style={{width:"180px", float:"left",  height:"47px"}}>
+          <ToggleSwitch
+            label={format_string("Channel " + String(channel))}
+            onClick={(event) => onToggled(event, "ttipsu/devices/" + supply + "/channels/" + channel, periodicEndpoint)}
+            checked={periodicEndpoint.data.ttipsu["devices"][supply].channels[channel].status}
+          />
+        </div>
+        <div className="powerSupply">
+          <InputGroup.Text style={{paddingLeft:"0px", paddingRight:"0px"}}>
+            <p style={{marginBottom:"0px", height:"33px", textAlign:"center", width:"100%"}}>{periodicEndpoint.data.ttipsu["devices"][supply].channels[channel].voltage.output + " V"}</p>
+          </InputGroup.Text>
+        </div>
+        <div className="powerSupply">
+          <InputGroup.Text style={{paddingLeft:"0px", paddingRight:"0px"}}>
+            <p style={{marginBottom:"0px", height:"33px", textAlign:"center", width:"100%"}}>{periodicEndpoint.data.ttipsu["devices"][supply].channels[channel].current.output + " A"}</p>
+          </InputGroup.Text>
+        </div>
+        <div className="powerSupply">
+          <InputGroup.Text style={{paddingLeft:"0px", paddingRight:"0px"}}>
+            <p style={{marginBottom:"0px", height:"33px", textAlign:"center", width:"100%"}}>{Math.abs(Math.round(periodicEndpoint.data.ttipsu["devices"][supply].channels[channel].voltage.output*periodicEndpoint.data.ttipsu["devices"][supply].channels[channel].current.output * 10000)/10000) + " W"}</p>
+          </InputGroup.Text>
+        </div>
+      </>
+    )
+  }
+  return power_supply
+}
+
+function get_power_supplies(periodicEndpoint){
+  var power_supplies = []  
+
+  function onToggled(event, path, periodicEndpoint){
+    periodicEndpoint.put({["remote_enable"]:event.target.value}, path)
+    .then((response) => {
+      periodicEndpoint.mergeData(response, path);
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+  }
+
+  for (let supply of Object.keys(periodicEndpoint.data.ttipsu["devices"])){
+    power_supplies.push(
+      <div style={{width:"48%", display:"inline-block", marginLeft:"1%", marginRight:"1%"}}>
+      <TitleCard title={<>
+        <p style={{float:"left"}}>
+          {supply + ". " + periodicEndpoint.data.ttipsu["devices"][supply].id + " hosted on " + periodicEndpoint.data.ttipsu["devices"][supply].host}
+        </p>
+        <div style={{width:"150px", float:"right"}}>
+          <ToggleSwitch
+              label="Remote Access"
+              onClick={(event) => onToggled(event, "ttipsu/devices/" + supply + "/", periodicEndpoint)}
+              checked={periodicEndpoint.data.ttipsu["devices"][supply].remote_enable}
+            />
+        </div>
+        </>}>
+        {get_power_supply(periodicEndpoint, supply)}
+      </TitleCard>
+      </div>
+    )
+  }
+  return power_supplies
+}
+
+function get_total_power(periodicEndpoint){
+  var total_power = 0
+  for (let supply of Object.keys(periodicEndpoint.data.ttipsu["devices"])){
+    for (let channel of Object.keys(periodicEndpoint.data.ttipsu["devices"][supply].channels)){
+      total_power += Math.abs(periodicEndpoint.data.ttipsu["devices"][supply].channels[channel].voltage.output * periodicEndpoint.data.ttipsu["devices"][supply].channels[channel].current.output)
+    }
+  }
+  return Math.round(total_power * 10000)/10000
+}
+
+function get_debug_register(periodicEndpoint){
+  var html = []
+
+  function whenClicked(event){
+    console.log(event.target.title)
+  }
+  var bin = false;
+  if (Math.max(...periodicEndpoint.data.application.debugreg.pixel_data) == 1){
+    bin = true
+  }
+  for (let i = 0; i < periodicEndpoint.data.application.debugreg.pixel_data.length; i++){
+    var percentage;
+    if (bin){
+      percentage = (255-(255 * periodicEndpoint.data.application.debugreg.pixel_data[i])).toString(16)
+    }
+    else{
+      percentage = Math.round(255-(255 * periodicEndpoint.data.application.debugreg.pixel_data[i]/8192)).toString(16)
+    }
+    
+    while (percentage.length < 2){
+      percentage = "0" + percentage
+    }
+    var color = "#" + percentage + percentage + percentage
+    html.push(
+      <div onClick={whenClicked} title={"Pixel " + String(i) + ": " + String(periodicEndpoint.data.application.debugreg.pixel_data[i])} style={{backgroundColor:color, display:"inline-block"}}></div>
+    ) 
+  }
+  return html
+}
+
 export default function App(){
-  // create the endpoint to use to contact the adapter, at the address specified in the .env file,
+  //create the endpoint to use to contact the adapter, at the address specified in the .env file,
   //polling it to get the most recent parameter tree every 500 milliseconds
   const periodicEndpoint = useAdapterEndpoint("detector", process.env.REACT_APP_ENDPOINT_URL, 500);
+  const periodicEndpointPower = useAdapterEndpoint("proxy", process.env.REACT_APP_ENDPOINT_URL, 500);
   const [loadInput, setLoadInput] = useState("None");
   if (Object.keys(configs).length > 0 && loadInput == "None"){
     setLoadInput(Object.keys(configs)[0]);
@@ -826,16 +1024,16 @@ export default function App(){
 
   return (
     <OdinApp title="GARUD"
-    navLinks={["Main", "GPIO Direct", "Configuration", "JSON"]}
+    navLinks={["Main", "GPIO Direct", "Configuration", "Debug Register Test", "Detector JSON", "Power Supply JSON"]}
     icon_src="odin.png">
       <Container>
         <div className="odin-server">
           <TitleCard title={<><p style={{float:"left"}}>Controls</p></>}>
-            <div className="control">
-              <EndpointButton endpoint={periodicEndpoint} event_type="click" fullpath="enable" value={true}>Enable Power Supplies</EndpointButton>
-              <EndpointButton endpoint={periodicEndpoint} event_type="click" fullpath="disable" value={true}>Disable Power Supplies</EndpointButton>
-              <EndpointButton endpoint={periodicEndpoint} event_type="click" fullpath="defaults" value={true}>Program Defaults</EndpointButton>
-            </div>
+            <TitleCard title={<><p style={{float:"left"}}>Power Supplies</p><p style={{float:"right"}}>{"Total Power: " + (Object.keys(periodicEndpointPower.data).length > 0 ? get_total_power(periodicEndpointPower) : "-") + " W"}</p></>}>
+            {Object.keys(periodicEndpointPower.data).length > 0 ? 
+              get_power_supplies(periodicEndpointPower) : 
+              <><p style={{color:"red"}}>Error - no data received from adapter:</p><pre style={{color:"red"}}>{JSON.stringify(periodicEndpointPower.data, null, " ")}</pre></>}
+            </TitleCard>
           </TitleCard>
           <br/>
         </div>
@@ -863,7 +1061,8 @@ export default function App(){
       </Container>
       <Container>
         <div className="odin-server">
-          <TitleCard title={<><p style={{float:"left"}} >DACs</p><input onClick={() => resetDACsToValues(periodicEndpoint)} style={{float:"right", color:"white", backgroundColor:"#0d6efd", borderColor:"#0d6efd", borderStyle:"solid", borderRadius:"5px"}} type="button" value="Reset to current values"/><input onClick={() => applyDACs(periodicEndpoint)} style={{float:"right", color:"white", backgroundColor:"#0d6efd", borderColor:"#0d6efd", borderStyle:"solid", borderRadius:"5px", marginRight:"5px"}} type="button" value="Apply"/><input onClick={() => ResetDACs(periodicEndpoint)} style={{float:"right", color:"white", backgroundColor:"#0d6efd", borderColor:"#0d6efd", borderStyle:"solid", borderRadius:"5px", marginRight:"5px"}} type="button" value="Reset to defaults"/></>}>
+          <TitleCard title={<><p style={{float:"left"}} >DACs</p> {GetDACButtons(periodicEndpoint)}
+          <input onClick={() => ResetDACs(periodicEndpoint)} style={{float:"right", marginRight:"5px"}} className="nice-button" type="button" value="Reset to defaults"/></>}>
             <div>
             {Object.keys(periodicEndpoint.data).length > 0 ? 
               GetDACs(periodicEndpoint) : 
@@ -871,7 +1070,8 @@ export default function App(){
             </div>
           </TitleCard>
           <br/>
-          <TitleCard title={<><p style={{float:"left"}}>Configuration Shift-Register</p><input onClick={() => resetSRConfig(periodicEndpoint)} style={{float:"right", color:"white", backgroundColor:"#0d6efd", borderColor:"#0d6efd", borderStyle:"solid", borderRadius:"5px"}} type="button" value="Reset to current values"/><input onClick={() => applySRConfig(periodicEndpoint)} style={{float:"right", color:"white", backgroundColor:"#0d6efd", borderColor:"#0d6efd", borderStyle:"solid", borderRadius:"5px", marginRight:"5px"}} type="button" value="Apply"/></>}>
+          <TitleCard title={<><p style={{float:"left"}}>Configuration Shift-Register</p>{GetSRConfigButtons(periodicEndpoint)}</>}>
+            
             <div>
             {Object.keys(periodicEndpoint.data).length > 0 ? 
               GetConfigs(periodicEndpoint) : 
@@ -879,7 +1079,7 @@ export default function App(){
             </div>
           </TitleCard>
           <br/>
-          <TitleCard title={<><p style={{float:"left"}}>Readout Config</p><input onClick={() => resetReadoutConfig(periodicEndpoint)} style={{float:"right", color:"white", backgroundColor:"#0d6efd", borderColor:"#0d6efd", borderStyle:"solid", borderRadius:"5px"}} type="button" value="Reset to current values"/><input onClick={() => applyReadoutConfig(periodicEndpoint)} style={{float:"right", color:"white", backgroundColor:"#0d6efd", borderColor:"#0d6efd", borderStyle:"solid", borderRadius:"5px", marginRight:"5px"}} type="button" value="Apply"/></>}>
+          <TitleCard title={<><p style={{float:"left"}}>Readout Config</p>{GetReadoutConfigButtons(periodicEndpoint)}</>}>
             <div>
             {Object.keys(periodicEndpoint.data).length > 0 ? 
               GetReadoutConfig(periodicEndpoint) : 
@@ -891,8 +1091,28 @@ export default function App(){
       </Container>
       <Container>
         <div className="odin-server">
-          <TitleCard title="JSON">
+          <TitleCard title="Debug Register Test">
+            {Object.keys(periodicEndpoint.data).length > 0 ? 
+              <div style={{display:"grid", gridTemplateColumns:"repeat(128, auto)", gridTemplateRows:"repeat(64, 10px)"}}>
+                {get_debug_register(periodicEndpoint)}
+              </div>
+              : <><p style={{color:"red"}}>Error - no data received from adapter:</p><pre style={{color:"red"}}>{JSON.stringify(periodicEndpoint.data, null, " ")}</pre></>}
+          </TitleCard>
+          <br/>
+        </div>
+      </Container>
+      <Container>
+        <div className="odin-server">
+          <TitleCard title="Detector JSON">
             <pre dangerouslySetInnerHTML={{__html: format_json(JSON.stringify(periodicEndpoint.data, null, "    "), 1)}}></pre>
+          </TitleCard>
+          <br/>
+        </div>
+      </Container>
+      <Container>
+        <div className="odin-server">
+          <TitleCard title="Power Supply JSON">
+            <pre dangerouslySetInnerHTML={{__html: format_json(JSON.stringify(periodicEndpointPower.data, null, "    "), 1)}}></pre>
           </TitleCard>
           <br/>
         </div>

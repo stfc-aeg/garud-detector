@@ -1,5 +1,3 @@
-
-
 .odin-server {
   padding-top:15px;
   padding-bottom:0px;
@@ -26,6 +24,13 @@
 .dropdown{
   display: inline-block
 }
+
+.powerSupply{
+  width:calc(33% - 60px); 
+  float:left;
+  height:47px;
+}
+
 
 /* formatting for the progress bars*/
 .progress-bar-outer{
@@ -128,6 +133,24 @@ input[type=number] {
   width:calc(100% - 2rem); 
   height:calc(100% - 41px - 2rem); 
   z-index:55;
+}
+
+.nice-button{
+  color:white;
+  background-color:#0d6efd;
+  border-color:#0d6efd;
+  border-style:solid;
+  border-radius:5px;
+  height:38px;
+}
+
+.disabled-button{
+  color:white;
+  background-color:#a9a9a9;
+  border-color:#a9a9a9;
+  border-style:solid;
+  border-radius:5px;
+  height:38px;
 }
 
 /* formatting for displaying the jsons with strings, numbers, booleans and brackets different colours. */
