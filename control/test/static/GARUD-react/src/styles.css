@@ -32,32 +32,6 @@
 }
 
 
-/* formatting for the progress bars*/
-.progress-bar-outer{
-  margin-left:auto;
-  margin-right:auto;
-  position:relative;
-  background-color:#f2f2f2;
-  color:#dee2e6;
-  border-style:solid;
-  border-width: 2px;
-  border-radius: 5px;
-  height:25px;
-  width:80%;
-}
-.progress-bar-inner{
-  position:absolute;
-  border-radius:5px;
-  height:21px;
-}
-.progress-bar-text{
-  position:relative;
-  text-align:center;
-  color:#050505;
-  font-weight: bold;
-  font-style:italic;
-}
-
 .wrap-and-compress{
   flex-direction: row;
   flex-wrap: wrap;

@@ -9,6 +9,9 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Button from 'react-bootstrap/Button';
 import Switch from "react-switch";
+import Plot from 'react-plotly.js';
+import PixelGrid from "./PixelGrid";
+
 //import fs from "fs";
 
 //Dictionary of the default binary values for each DAC
@@ -734,7 +737,7 @@ function GetSaveLoadBar([loadInput, setLoadInput], endpoint){
   return <div style={{float:"right"}}>
     <div style={{marginRight:"20px", display:"inline-block"}}>
       <TitleCard title="Save">
-      <input onClick={() => saveConfig(endpoint)} style={{display:"inline-block",  height:"38px", width:"47%", color:"white", backgroundColor:"#0d6efd", borderColor:"#0d6efd", borderStyle:"solid", borderRadius:"5px"}} type="button" value="Save configuration as"/>&nbsp;
+        <input onClick={() => saveConfig(endpoint)} style={{display:"inline-block",  height:"38px", width:"47%", color:"white", backgroundColor:"#0d6efd", borderColor:"#0d6efd", borderStyle:"solid", borderRadius:"5px"}} type="button" value="Save configuration as"/>&nbsp;
         <input className="textInput" ref={saveInputRef} style={{display:"inline-block",  height:"38px", width:"51%"}} type="text" defaultValue="config"/>
         
       </TitleCard>
@@ -894,7 +897,7 @@ function GetReadoutConfigButtons(periodicEndpoint){
 
 function get_power_supply(periodicEndpoint, supply){
   var power_supply = []
-
+  //when the channel is toggled, send the value to the adapter to turn it on or off
   function onToggled(event, path, periodicEndpoint){
     periodicEndpoint.put({["status"]:event.target.value}, path)
     .then((response) => {
@@ -905,6 +908,7 @@ function get_power_supply(periodicEndpoint, supply){
     });
   }
 
+  //iterate through each channel and create a box for it with a toggle to turn it on and off
   for (let channel of Object.keys(periodicEndpoint.data.ttipsu["devices"][supply].channels)){
     power_supply.push(
       <>
@@ -939,6 +943,7 @@ function get_power_supply(periodicEndpoint, supply){
 function get_power_supplies(periodicEndpoint){
   var power_supplies = []  
 
+  //send a command to the adapter to enable the power supply
   function onToggled(event, path, periodicEndpoint){
     periodicEndpoint.put({["remote_enable"]:event.target.value}, path)
     .then((response) => {
@@ -949,6 +954,7 @@ function get_power_supplies(periodicEndpoint){
     });
   }
 
+  //iterate through each power supply, and create a card with a toggle and the channels
   for (let supply of Object.keys(periodicEndpoint.data.ttipsu["devices"])){
     power_supplies.push(
       <div style={{width:"48%", display:"inline-block", marginLeft:"1%", marginRight:"1%"}}>
@@ -956,7 +962,7 @@ function get_power_supplies(periodicEndpoint){
         <p style={{float:"left"}}>
           {supply + ". " + periodicEndpoint.data.ttipsu["devices"][supply].id + " hosted on " + periodicEndpoint.data.ttipsu["devices"][supply].host}
         </p>
-        <div style={{width:"150px", float:"right"}}>
+        <div style={{width:"200px", float:"right"}}>
           <ToggleSwitch
               label="Remote Access"
               onClick={(event) => onToggled(event, "ttipsu/devices/" + supply + "/", periodicEndpoint)}
@@ -972,6 +978,7 @@ function get_power_supplies(periodicEndpoint){
   return power_supplies
 }
 
+// calculate the power of each power supply, remove any negatives and sum them together, before rounding the power to four decimal places
 function get_total_power(periodicEndpoint){
   var total_power = 0
   for (let supply of Object.keys(periodicEndpoint.data.ttipsu["devices"])){
@@ -982,44 +989,95 @@ function get_total_power(periodicEndpoint){
   return Math.round(total_power * 10000)/10000
 }
 
-function get_debug_register(periodicEndpoint){
-  var html = []
+// A function to evaluate if two arrays of data are the same, by converting them to strings and comparing them
+function isEqual(oldProps, newProps){
+  return Array.from(oldProps.z_data).flat().join(",") === Array.from(newProps.z_data).flat().join(",")
+}
 
-  function whenClicked(event){
-    console.log(event.target.title)
-  }
-  var bin = false;
-  if (Math.max(...periodicEndpoint.data.application.debugreg.pixel_data) == 1){
-    bin = true
+// a plotly component, to create a heatmap in black and white. The use of memo makes it only rerender when the isEqual function is false
+const Heatmap = React.memo((props)=>{
+  return (
+    <div style={{marginLeft:"auto", marginRight:"auto", maxWidth:"fit-content"}}>
+      <Plot
+        data={[{
+          showlegend: false,
+          showscale:false,
+          z: props.z_data,
+          type: 'heatmap',
+          colorscale: 'Greys',
+        }]}
+        layout={{
+          width:1441,
+          height:821,
+          title: {
+            text: 'Debug Register Output'
+          },
+          xaxis: {
+            visible: false,
+            fixedrange: true
+          },
+          yaxis: {
+            visible: false,
+            fixedrange: true
+          }
+        }}
+      />
+    </div>
+  )
+}, isEqual);
+
+//convert the array of data we are given into a 2d array, then create a heatmap using the plotly library (component defined separately) using that data
+function get_debug_register(periodicEndpoint){
+  var z_data = []
+  for (let x = 0; x < 64; x++){
+    var temp = []
+    for (let y = 0; y < 128; y++){
+      temp.push(0)
+    }
+    z_data.push(temp)
   }
   for (let i = 0; i < periodicEndpoint.data.application.debugreg.pixel_data.length; i++){
-    var percentage;
-    if (bin){
-      percentage = (255-(255 * periodicEndpoint.data.application.debugreg.pixel_data[i])).toString(16)
-    }
-    else{
-      percentage = Math.round(255-(255 * periodicEndpoint.data.application.debugreg.pixel_data[i]/8192)).toString(16)
-    }
-    
-    while (percentage.length < 2){
-      percentage = "0" + percentage
-    }
-    var color = "#" + percentage + percentage + percentage
-    html.push(
-      <div onClick={whenClicked} title={"Pixel " + String(i) + ": " + String(periodicEndpoint.data.application.debugreg.pixel_data[i])} style={{backgroundColor:color, display:"inline-block"}}></div>
-    ) 
+    z_data[63-Math.floor(i/128)][i%128] = periodicEndpoint.data.application.debugreg.pixel_data[i]
   }
-  return html
+  return <Heatmap z_data={z_data}/>
 }
+
+
 
 export default function App(){
   //create the endpoint to use to contact the adapter, at the address specified in the .env file,
   //polling it to get the most recent parameter tree every 500 milliseconds
-  const periodicEndpoint = useAdapterEndpoint("detector", process.env.REACT_APP_ENDPOINT_URL, 500);
-  const periodicEndpointPower = useAdapterEndpoint("proxy", process.env.REACT_APP_ENDPOINT_URL, 500);
+  const periodicEndpoint = useAdapterEndpoint("detector", process.env.REACT_APP_ENDPOINT_URL, 1000);
+  const periodicEndpointPower = useAdapterEndpoint("proxy", process.env.REACT_APP_ENDPOINT_URL, 1000);
   const [loadInput, setLoadInput] = useState("None");
   if (Object.keys(configs).length > 0 && loadInput == "None"){
     setLoadInput(Object.keys(configs)[0]);
+  }
+  const [debug_reg_input, set_debug_reg_input] = useState([]);
+  if (debug_reg_input.length == 0){
+    var z_data = []
+    for (let x = 0; x < 64; x++){
+      var temp = []
+      for (let y = 0; y < 128; y++){
+        temp.push(0)
+      }
+      z_data.push(temp)
+    }
+    set_debug_reg_input(z_data)
+  }
+  
+  let colours = ['#000','#fff']
+  const [activeColourIndex, set_active_colour_index] = useState(1);
+  const [mouseDown, setMouseDown] = useState(false)
+  document.body.onmousedown = () => setMouseDown(true)
+  document.body.onmouseup = () => setMouseDown(false)
+  const [pixels, set_pixels] = useState([]);
+  if (pixels.length == 0){
+    var temp = []
+    for (let i = 0; i < 8192; i++){
+      temp.push(0)
+      set_pixels(temp)
+    }
   }
 
   return (
@@ -1091,11 +1149,11 @@ export default function App(){
       </Container>
       <Container>
         <div className="odin-server">
-          <TitleCard title="Debug Register Test">
+          <PixelGrid title="Debug Register Input" pixels={pixels} set_pixels={set_pixels} mouseDown={mouseDown} colours={colours} activeColourIndex={activeColourIndex} set_active_colour_index={set_active_colour_index}/>
+          <br/>
+          <TitleCard title="Debug Register Output">
             {Object.keys(periodicEndpoint.data).length > 0 ? 
-              <div style={{display:"grid", gridTemplateColumns:"repeat(128, auto)", gridTemplateRows:"repeat(64, 10px)"}}>
-                {get_debug_register(periodicEndpoint)}
-              </div>
+                <>{get_debug_register(periodicEndpoint)}</>
               : <><p style={{color:"red"}}>Error - no data received from adapter:</p><pre style={{color:"red"}}>{JSON.stringify(periodicEndpoint.data, null, " ")}</pre></>}
           </TitleCard>
           <br/>
