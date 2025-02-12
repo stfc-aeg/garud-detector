@@ -847,47 +847,16 @@ function resetReadoutConfig(endpoint){
   })
 }
 
-function GetDACButtons(periodicEndpoint){
-  if (Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application.dacs.SYNC_ON_WRITE){
+//Generate the buttons for the title bar of the configuration registers - two buttons, one of which resets any changed values to their true values, and one which applies any changed values.
+function GetButtons(periodicEndpoint, func_to_run, type){
+  if (Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application[type].SYNC_ON_WRITE){
     return <>
-    {Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application.dacs.SYNC ? 
-      <input onClick={() => resetDACsToValues(periodicEndpoint)} style={{float:"right"}} className="nice-button" type="button" value="Reset to true values"/>  : 
-      <input style={{float:"right"}} className="disabled-button" type="button" disabled value="Reset to true values"/>}
-    {Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application.dacs.SYNC ? 
-      <EndpointButton style={{float:"right", marginRight:"5px"}} endpoint={periodicEndpoint} event_type="click" fullpath="application/dacs/SYNC" value={true}>Apply</EndpointButton> : 
-      <EndpointButton style={{float:"right", marginRight:"5px", backgroundColor:"grey", borderColor:"grey"}} fullpath="application/dacs/SYNC" endpoint={periodicEndpoint} disabled>Apply</EndpointButton>}
-    </>
-  }
-  else{
-    return <></>
-  }
-}
-
-function GetSRConfigButtons(periodicEndpoint){
-  if (Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application.configbits.SYNC_ON_WRITE){
-    return <>
-      {Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application.configbits.SYNC ? 
-        <input onClick={() => resetSRConfig(periodicEndpoint)} style={{float:"right"}} className="nice-button" type="button" value="Reset to true values"/>  : 
+      {Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application[type].SYNC ? 
+        <input onClick={() => func_to_run(periodicEndpoint)} style={{float:"right"}} className="nice-button" type="button" value="Reset to true values"/>  : 
         <input style={{float:"right"}} className="disabled-button" type="button" disabled value="Reset to true values"/>}
-      {Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application.configbits.SYNC ? 
-        <EndpointButton style={{float:"right", marginRight:"5px"}} endpoint={periodicEndpoint} event_type="click" fullpath="application/configbits/SYNC" value={true}>Apply</EndpointButton> : 
-        <EndpointButton style={{float:"right", marginRight:"5px", backgroundColor:"grey", borderColor:"grey"}} fullpath="application/configbits/SYNC" endpoint={periodicEndpoint} disabled>Apply</EndpointButton>}
-    </>
-  }
-  else{
-    return <></>
-  }
-}
-
-function GetReadoutConfigButtons(periodicEndpoint){
-  if (Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application.readoutconfig.SYNC_ON_WRITE){
-    return <>
-      {Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application.readoutconfig.SYNC ? 
-        <input onClick={() => resetReadoutConfig(periodicEndpoint)} style={{float:"right"}} className="nice-button" type="button" value="Reset to true values"/>  : 
-        <input style={{float:"right"}} className="disabled-button" type="button" disabled value="Reset to true values"/>}
-      {Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application.readoutconfig.SYNC ? 
-        <EndpointButton style={{float:"right", marginRight:"5px"}} endpoint={periodicEndpoint} event_type="click" fullpath="application/readoutconfig/SYNC" value={true}>Apply</EndpointButton> : 
-        <EndpointButton style={{float:"right", marginRight:"5px", backgroundColor:"grey", borderColor:"grey"}} fullpath="application/readoutconfig/SYNC" endpoint={periodicEndpoint} disabled>Apply</EndpointButton>}
+      {Object.keys(periodicEndpoint.data).length > 0 && !periodicEndpoint.data.application[type].SYNC ? 
+        <EndpointButton style={{float:"right", marginRight:"5px"}} endpoint={periodicEndpoint} event_type="click" fullpath={"application/"+type+"/SYNC"} value={true}>Apply</EndpointButton> : 
+        <EndpointButton style={{float:"right", marginRight:"5px", backgroundColor:"grey", borderColor:"grey"}} fullpath={"application/"+type+"/SYNC"} endpoint={periodicEndpoint} disabled>Apply</EndpointButton>}
     </>
   }
   else{
@@ -1119,7 +1088,7 @@ export default function App(){
       </Container>
       <Container>
         <div className="odin-server">
-          <TitleCard title={<><p style={{float:"left"}} >DACs</p> {GetDACButtons(periodicEndpoint)}
+          <TitleCard title={<><p style={{float:"left"}} >DACs</p> {GetButtons(periodicEndpoint, resetDACsToValues, "dacs")}
           <input onClick={() => ResetDACs(periodicEndpoint)} style={{float:"right", marginRight:"5px"}} className="nice-button" type="button" value="Reset to defaults"/></>}>
             <div>
             {Object.keys(periodicEndpoint.data).length > 0 ? 
@@ -1128,7 +1097,7 @@ export default function App(){
             </div>
           </TitleCard>
           <br/>
-          <TitleCard title={<><p style={{float:"left"}}>Configuration Shift-Register</p>{GetSRConfigButtons(periodicEndpoint)}</>}>
+          <TitleCard title={<><p style={{float:"left"}}>Configuration Shift-Register</p>{GetButtons(periodicEndpoint, resetSRConfig, "configbits")}</>}>
             
             <div>
             {Object.keys(periodicEndpoint.data).length > 0 ? 
@@ -1137,7 +1106,7 @@ export default function App(){
             </div>
           </TitleCard>
           <br/>
-          <TitleCard title={<><p style={{float:"left"}}>Readout Config</p>{GetReadoutConfigButtons(periodicEndpoint)}</>}>
+          <TitleCard title={<><p style={{float:"left"}}>Readout Config</p>{GetButtons(periodicEndpoint, resetReadoutConfig, "readoutconfig")}</>}>
             <div>
             {Object.keys(periodicEndpoint.data).length > 0 ? 
               GetReadoutConfig(periodicEndpoint) : 
