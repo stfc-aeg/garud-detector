@@ -252,11 +252,12 @@ const DAC = React.forwardRef((props,ref) =>
   //prevents most keys from having an effect, except: the keys 0 and 1, the keys 2-9 when we are accepting denary inputs, 
   //the backspace key, the delete key and the left and right arrow keys.
   function preventNonNumericCharacters(event) {
-    var whitelist = [8, 12, 33, 34, 35, 36, 37, 38, 39, 40, 46,]
+    var whitelist = [8, 12, 33, 34, 35, 36, 37, 39, 46,]
     var e = event || window.event;  
     var key = e.keyCode || e. which;
+    console.log(key)
     if (numberType == "Binary"){
-      if ((key < 48 || key > 49) && !whitelist.includes(key)) {
+      if ((key < 48 || key > 49) && (key != 96 && key != 97) && !whitelist.includes(key)) {
         if (e.preventDefault){
           e.preventDefault();
         } 
@@ -264,7 +265,7 @@ const DAC = React.forwardRef((props,ref) =>
       } 
     } 
     else if (numberType == "Denary"){                             
-      if ((key < 48 || key > 57)&&(key != 8)&&(key != 46)&&(key != 37)&&(key != 39)) {
+      if ((key < 48 || key > 57)&&(key < 96 || key > 105)&&(key != 8)&&(key != 46)&&(key != 37)&&(key != 39)) {
         if (e.preventDefault){
           e.preventDefault();
         } 
@@ -431,10 +432,10 @@ const Config = React.forwardRef((props, ref) => {
   
   //prevents most keys from having an effect, except: the keys 0 and 1, the backspace key, the delete key and the left and right arrow keys.
   function preventNonNumericCharacters(event) {
-    var whitelist = [8, 12, 33, 34, 35, 36, 37, 38, 39, 40, 46,]
+    var whitelist = [8, 12, 33, 34, 35, 36, 37,39, 46,]
     var e = event || window.event;  
     var key = e.keyCode || e. which;
-    if ((key < 48 || key > 49) && !whitelist.includes(key)) {
+    if ((key < 48 || key > 49) && (key != 96 && key != 97) && !whitelist.includes(key)) {
       if (e.preventDefault){
         e.preventDefault();
       } 
@@ -547,10 +548,10 @@ const ReadoutConfig = React.forwardRef((props, ref) => {
   
   //prevents most keys from having an effect, except: the keys 0 and 1, the backspace key, the delete key and the left and right arrow keys.
   function preventNonNumericCharacters(event) {
-    var whitelist = [8, 12, 33, 34, 35, 36, 37, 38, 39, 40, 46,]
+    var whitelist = [8, 12, 33, 34, 35, 36, 37, 39, 46,]
     var e = event || window.event;  
     var key = e.keyCode || e. which;
-    if ((key < 48 || key > 49) && !whitelist.includes(key)) {
+    if ((key < 48 || key > 49) && (key != 96 && key != 97) && !whitelist.includes(key)) {
       if (e.preventDefault){
         e.preventDefault();
       } 
@@ -788,7 +789,6 @@ function changeLoadInput(event, [loadInput, setLoadInput]){
   setLoadInput(event);
 }
 
-
 //Overwrite the values currently in the Config inputs (see config functional component) with the values in the parameter tree
 function resetSRConfig(endpoint){
   var pathToSRConfigs = ["application", "configbits"]
@@ -825,7 +825,6 @@ function resetDACsToValues(endpoint){
     console.error(err);
   })
 }
-
 
 //Overwrite the values currently in the ReadoutConfig inputs (see ReadoutConfig functional component) with the values in the parameter tree
 function resetReadoutConfig(endpoint){
@@ -1010,8 +1009,6 @@ function get_debug_register(periodicEndpoint){
   }
   return <Heatmap z_data={z_data}/>
 }
-
-
 
 export default function App(){
   //create the endpoint to use to contact the adapter, at the address specified in the .env file,
