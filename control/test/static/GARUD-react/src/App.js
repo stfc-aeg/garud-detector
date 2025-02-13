@@ -1127,7 +1127,7 @@ export default function App(){
       </Container>
       <Container>
         <div className="odin-server">
-          <TitleCard title="Detector JSON">
+          <TitleCard title="Detector JSON Data">
             <pre dangerouslySetInnerHTML={{__html: format_json(JSON.stringify(periodicEndpoint.data, null, "    "), 1)}}></pre>
           </TitleCard>
           <br/>
@@ -1135,7 +1135,7 @@ export default function App(){
       </Container>
       <Container>
         <div className="odin-server">
-          <TitleCard title="Power Supply JSON">
+          <TitleCard title="Power Supply JSON Data">
             <pre dangerouslySetInnerHTML={{__html: format_json(JSON.stringify(periodicEndpointPower.data, null, "    "), 1)}}></pre>
           </TitleCard>
           <br/>
