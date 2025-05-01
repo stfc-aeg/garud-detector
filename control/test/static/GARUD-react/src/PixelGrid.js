@@ -63,12 +63,24 @@ export default function PixelGrid(props){
         return props.pixels.join(",")
     }
 
+    function Send(){
+        props.endpoint.put({["transfer"]:props.pixels}, "application/debugreg")
+        .then(response => {
+            props.endpoint.mergeData(response, "application/debugreg");
+        })
+        .catch((err) => {
+            console.error(err);
+        })
+    }
+
+
     return (
     <TitleCard title={<>
         <p style={{float:"left"}}>{props.title}</p>
         <CopyToClipboard text={get_text()}>
         <input style={{float:"right", marginRight:"5px"}} className="nice-button" type="button" value="Get"/>
         </CopyToClipboard>
+        <input style={{float:"right", marginRight:"5px"}} onClick={Send} className="nice-button" type="button" value="Send"/>
         </>}>
         <div style={{marginRight:"auto", marginLeft:"auto", width:"1290px"}}>
         <div id="palette" style={{marginRight:"auto", marginLeft:"auto"}}>{get_palette(props.colours, props.activeColourIndex, props.set_active_colour_index)}</div>

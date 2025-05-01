@@ -1010,14 +1010,152 @@ function get_debug_register(periodicEndpoint){
   return <Heatmap z_data={z_data}/>
 }
 
+function getADCReadButton(endpoint){
+  function Send(){
+    endpoint.put({["trigger_adc_read"]:true}, "application/debugreg")
+    .then(response => {
+        endpoint.mergeData(response, "application/debugreg");
+    })
+    .catch((err) => {
+        console.error(err);
+    })
+  }
+  return (
+    <input style={{width:"100%"}} onClick={Send} className="nice-button" type="button" value="Trigger ADC read"/>
+  )
+}
+
+function getSingleReadButton(endpoint){
+  function Send(){
+    endpoint.put({["trigger_single_read"]:true}, "application/debugreg")
+    .then(response => {
+        endpoint.mergeData(response, "application/debugreg");
+    })
+    .catch((err) => {
+        console.error(err);
+    })
+  }
+  return (
+    <input style={{width:"100%"}} onClick={Send} className="nice-button" type="button" value="Trigger single read"/>
+  )
+}
+
+function getBitAmountInput(endpoint){
+  function Send(event, endpoint){
+    var valueToSend = 8192;
+    if (event.target.value != ""){
+      event.target.value = Math.min(event.target.value, 8192);
+      event.target.value = Math.max(event.target.value, 1);
+      valueToSend = Number(event.target.value)
+    }
+    endpoint.put({["readout_length"]:valueToSend}, "application/debugreg")
+    .then(response => {
+        endpoint.mergeData(response, "application/debugreg");
+    })
+    .catch((err) => {
+        console.error(err);
+    })
+  }
+  return (<>
+    <div style={{width:"100%"}}>
+      <p style={{width:"270px", display:"inline-block"}}>Number of bits to read (1-8192):</p>
+      <input onChange={(event) => Send(event, endpoint)} className="BitLengthInput" type="number" defaultValue={endpoint.data["application"]["debugreg"]["readout_length"]}/>
+    </div>
+    </>
+  )
+}
+
+function getBitDepthInput(endpoint){
+  function Send(event, endpoint){
+    endpoint.put({["readout_depth"]:Number(event.target.value)}, "application/debugreg")
+    .then(response => {
+        endpoint.mergeData(response, "application/debugreg");
+    })
+    .catch((err) => {
+        console.error(err);
+    })
+  }
+  return (<>
+    <div style={{width:"100%"}}>
+      <p style={{width:"240px", display:"inline-block"}}>Depth of bits to read (1-13):</p>
+      <input onChange={(event) => Send(event, endpoint)} className="BitDepthInput" type="range" min="1" max="13"/>
+      <p style={{width:"30px", marginLeft:"10px", display:"inline-block"}}>{endpoint.data.application.debugreg.readout_depth}</p>
+    </div>
+    </>
+  )
+}
+
+function getPowerStuff(periodicEndpointPower){
+  if (Object.keys(periodicEndpointPower.data).length > 0){
+    if (periodicEndpointPower.data.status.ttipsu.error){
+      return <TitleCard title={<><p style={{float:"left"}}>Power Supplies</p><p style={{float:"right"}}>{"Total Power: - W"}</p></>}><p style={{color:"red"}}>Error: {periodicEndpointPower.data.status.ttipsu.error}</p></TitleCard>
+    }    else{
+      return <>
+        <TitleCard title={<><p style={{float:"left"}}>Power Supplies</p><p style={{float:"right"}}>{"Total Power: " + (Object.keys(periodicEndpointPower.data).length > 0 ? get_total_power(periodicEndpointPower) : "-") + " W"}</p></>}>
+          {get_power_supplies(periodicEndpointPower)}
+        </TitleCard>
+      </>
+    }
+  }
+  else{
+    return <><p style={{color:"red"}}>Error - no data received from adapter:</p><pre style={{color:"red"}}>{JSON.stringify(periodicEndpointPower.data, null, " ")}</pre></>
+  }
+  
+}
+
+function getClockGenControls(periodicEndpoint, clockGenSetting, setClockGenSetting){
+  function applySetting(event){
+    setClockGenSetting(event)
+    var valueToSend = event
+    if (valueToSend == "None"){
+      valueToSend = null
+    }
+    periodicEndpoint.put({["config_file"]:valueToSend}, "clkgen")
+    .then(response => {
+        periodicEndpoint.mergeData(response, "clkgen");
+    })
+    .catch((err) => {
+        console.error(err);
+    })
+  }
+
+  if (Object.keys(periodicEndpoint.data).length > 0){
+    return <TitleCard title="Clock Generator Settings">
+      <p style={{display:"inline-block"}}>Clock Generator Config File:</p> &nbsp;
+      <div style={{display:"inline-block"}}>
+        <DropdownSelector buttonText={clockGenSetting || "None"} onSelect={applySetting}>
+        {periodicEndpoint.data.clkgen.config_files_avail.map(
+            (selection, index) =>
+            (
+              <Dropdown.Item eventKey={selection} key={index} active={selection == clockGenSetting}>{selection}</Dropdown.Item>
+            )
+        )}
+        </DropdownSelector> 
+      </div>
+    </TitleCard>
+  } 
+  else{
+    return <></>
+  }
+
+
+}
+
 export default function App(){
   //create the endpoint to use to contact the adapter, at the address specified in the .env file,
   //polling it to get the most recent parameter tree every 500 milliseconds
   const periodicEndpoint = useAdapterEndpoint("detector", process.env.REACT_APP_ENDPOINT_URL, 1000);
   const periodicEndpointPower = useAdapterEndpoint("proxy", process.env.REACT_APP_ENDPOINT_URL, 1000);
   const [loadInput, setLoadInput] = useState("None");
+  const [clockGenSetting, setClockGenSetting] = useState("Loading")
   if (Object.keys(configs).length > 0 && loadInput == "None"){
     setLoadInput(Object.keys(configs)[0]);
+  }
+  if (Object.keys(periodicEndpoint.data).length > 0 && clockGenSetting == "Loading"){
+    setClockGenSetting(periodicEndpoint.data.clkgen.config_file)
+    if (!clockGenSetting){
+      setClockGenSetting("None")
+    }
   }
   const [debug_reg_input, set_debug_reg_input] = useState([]);
   if (debug_reg_input.length == 0){
@@ -1045,7 +1183,7 @@ export default function App(){
       set_pixels(temp)
     }
   }
-
+  
   return (
     <OdinApp title="GARUD"
     navLinks={["Main", "GPIO Direct", "Configuration", "Debug Register Test", "Detector JSON", "Power Supply JSON"]}
@@ -1053,11 +1191,9 @@ export default function App(){
       <Container>
         <div className="odin-server">
           <TitleCard title={<><p style={{float:"left"}}>Controls</p></>}>
-            <TitleCard title={<><p style={{float:"left"}}>Power Supplies</p><p style={{float:"right"}}>{"Total Power: " + (Object.keys(periodicEndpointPower.data).length > 0 ? get_total_power(periodicEndpointPower) : "-") + " W"}</p></>}>
-            {Object.keys(periodicEndpointPower.data).length > 0 ? 
-              get_power_supplies(periodicEndpointPower) : 
-              <><p style={{color:"red"}}>Error - no data received from adapter:</p><pre style={{color:"red"}}>{JSON.stringify(periodicEndpointPower.data, null, " ")}</pre></>}
-            </TitleCard>
+            {getPowerStuff(periodicEndpointPower)}
+            <br/>
+            {getClockGenControls(periodicEndpoint, clockGenSetting, setClockGenSetting)}
           </TitleCard>
           <br/>
         </div>
@@ -1115,14 +1251,34 @@ export default function App(){
       </Container>
       <Container>
         <div className="odin-server">
-          <PixelGrid title="Debug Register Input" pixels={pixels} set_pixels={set_pixels} mouseDown={mouseDown} colours={colours} activeColourIndex={activeColourIndex} set_active_colour_index={set_active_colour_index}/>
+        {Object.keys(periodicEndpoint.data).length > 0 ? <>
+          <TitleCard title="Menu">
+            <div style={{width:"49%", float:"left"}}>
+              <TitleCard title="Trigger Reads">
+                {getSingleReadButton(periodicEndpoint)}
+                <div style={{width:"100%", height:"20px"}}></div>
+                {getADCReadButton(periodicEndpoint)}
+              </TitleCard>
+            </div>
+            <div style={{width:"49%", float:"right"}}>
+              <TitleCard title="Read settings">
+                {getBitAmountInput(periodicEndpoint)}
+                <div style={{width:"100%", height:"20px"}}></div>
+                {getBitDepthInput(periodicEndpoint)}
+              </TitleCard>
+            </div>
+          </TitleCard>
+          <br/>
+          <PixelGrid title="Debug Register Input" endpoint={periodicEndpoint} pixels={pixels} set_pixels={set_pixels} mouseDown={mouseDown} colours={colours} activeColourIndex={activeColourIndex} set_active_colour_index={set_active_colour_index}/>
           <br/>
           <TitleCard title="Debug Register Output">
             {Object.keys(periodicEndpoint.data).length > 0 ? 
                 <>{get_debug_register(periodicEndpoint)}</>
               : <><p style={{color:"red"}}>Error - no data received from adapter:</p><pre style={{color:"red"}}>{JSON.stringify(periodicEndpoint.data, null, " ")}</pre></>}
           </TitleCard>
-          <br/>
+          <br/></>
+          : <><p style={{color:"red"}}>Error - no data received from adapter:</p><pre style={{color:"red"}}>{JSON.stringify(periodicEndpoint.data, null, " ")}</pre></>
+          }
         </div>
       </Container>
       <Container>
