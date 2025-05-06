@@ -1087,7 +1087,7 @@ function getBitDepthInput(endpoint){
 
 function getPowerStuff(periodicEndpointPower){
   if (Object.keys(periodicEndpointPower.data).length > 0){
-    if (periodicEndpointPower.data.status.ttipsu.error){
+    if (periodicEndpointPower.data.status.ttipsu.error && periodicEndpointPower.data.status.ttipsu.error != "OK"){
       return <TitleCard title={<><p style={{float:"left"}}>Power Supplies</p><p style={{float:"right"}}>{"Total Power: - W"}</p></>}><p style={{color:"red"}}>Error: {periodicEndpointPower.data.status.ttipsu.error}</p></TitleCard>
     }    else{
       return <>
