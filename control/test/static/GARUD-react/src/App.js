@@ -33,6 +33,8 @@ import {
 } from "./Configuration";
 import { Toggles, SaveLoadBar } from "./GPIODirect";
 import { Toggle } from "./Toggle";
+import Navbar from "./Navbar";
+import { Routes, Route } from "react-router-dom";
 
 //List of which toggles are inputs
 const debugInputList = [
@@ -129,6 +131,303 @@ function BitToggles(props) {
   return toggles;
 }
 
+function Main(props) {
+  return (
+    <div className="odin-server">
+      <TitleCard
+        title={
+          <>
+            <p style={{ float: "left" }}>Controls</p>
+          </>
+        }
+      >
+        <PowerDisplay periodicEndpointPower={props.periodicEndpointPower} />
+        <br />
+        <ClockConfigSelect periodicEndpoint={props.periodicEndpoint} />
+      </TitleCard>
+      <br />
+    </div>
+  );
+}
+
+function GPIO_Direct(props) {
+  return (
+    <div className="odin-server">
+      <TitleCard
+        title={
+          <>
+            <p style={{ float: "left" }}>Controls</p>
+            <SaveLoadBar endpoint={props.periodicEndpoint} />
+          </>
+        }
+      >
+        <div className="wrap-and-compress">
+          {Object.keys(props.periodicEndpoint.data).length > 0 ? (
+            <Toggles
+              periodicEndpoint={props.periodicEndpoint}
+              isOutput={true}
+              debugInputList={debugInputList}
+            />
+          ) : (
+            <>
+              <p style={{ color: "red" }}>
+                Error - no data received from garud detector adapter
+              </p>
+            </>
+          )}
+        </div>
+      </TitleCard>
+      <br />
+      <TitleCard title="Debug inputs">
+        <div className="overlay" />
+        <div className="wrap-and-compress">
+          {Object.keys(props.periodicEndpoint.data).length > 0 ? (
+            <Toggles
+              periodicEndpoint={props.periodicEndpoint}
+              isOutput={false}
+              debugInputList={debugInputList}
+            />
+          ) : (
+            <>
+              <p style={{ color: "red" }}>
+                Error - no data received from garud detector adapter
+              </p>
+            </>
+          )}
+        </div>
+      </TitleCard>
+      <br />
+    </div>
+  );
+}
+
+function Configuration(props) {
+  return (
+    <div className="odin-server">
+      <TitleCard
+        title={
+          <>
+            <p style={{ float: "left" }}>DACs</p>{" "}
+            <ApplyResetConfigButtons
+              periodicEndpoint={props.periodicEndpoint}
+              func_to_run={resetDACsToValues}
+              type={"dacs"}
+            />
+            <input
+              onClick={() => ResetDACs(props.periodicEndpoint)}
+              style={{ float: "right", marginRight: "5px" }}
+              className="nice-button"
+              type="button"
+              value="Reset to defaults"
+            />
+          </>
+        }
+      >
+        <div>
+          {Object.keys(props.periodicEndpoint.data).length > 0 ? (
+            <DACReadouts periodicEndpoint={props.periodicEndpoint} />
+          ) : (
+            <>
+              <p style={{ color: "red" }}>
+                Error - no data received from garud detector adapter
+              </p>
+            </>
+          )}
+        </div>
+      </TitleCard>
+      <br />
+      <TitleCard
+        title={
+          <>
+            <p style={{ float: "left" }}>Configuration Shift-Register</p>
+            <ApplyResetConfigButtons
+              periodicEndpoint={props.periodicEndpoint}
+              func_to_run={resetSRConfig}
+              type={"configbits"}
+            />
+          </>
+        }
+      >
+        <div>
+          {Object.keys(props.periodicEndpoint.data).length > 0 ? (
+            <ConfigDisplay periodicEndpoint={props.periodicEndpoint} />
+          ) : (
+            <>
+              <p style={{ color: "red" }}>
+                Error - no data received from garud detector adapter
+              </p>
+            </>
+          )}
+        </div>
+      </TitleCard>
+      <br />
+      <TitleCard
+        title={
+          <>
+            <p style={{ float: "left" }}>Readout Config</p>
+            <ApplyResetConfigButtons
+              periodicEndpoint={props.periodicEndpoint}
+              func_to_run={resetReadoutConfig}
+              type={"readoutconfig"}
+            />
+          </>
+        }
+      >
+        <div>
+          {Object.keys(props.periodicEndpoint.data).length > 0 ? (
+            <ReadoutConfigDisplay periodicEndpoint={props.periodicEndpoint} />
+          ) : (
+            <>
+              <p style={{ color: "red" }}>
+                Error - no data received from garud detector adapter
+              </p>
+            </>
+          )}
+        </div>
+      </TitleCard>
+      <br />
+    </div>
+  );
+}
+
+function JSON_Display(props) {
+  return (
+    <div className="odin-server">
+      <TitleCard title={props.title}>
+        <pre
+          dangerouslySetInnerHTML={{
+            __html: format_json(
+              JSON.stringify(props.periodicEndpoint.data, null, "    "),
+              1
+            ),
+          }}
+        ></pre>
+      </TitleCard>
+      <br />
+    </div>
+  );
+}
+
+function Debug_Register(props) {
+  return (
+    <div className="odin-server">
+      {Object.keys(props.periodicEndpoint.data).length > 0 ? (
+        <>
+          <TitleCard title="Menu">
+            <div style={{ width: "49%", float: "left" }}>
+              <TitleCard title="Trigger Reads">
+                <TriggerReadButton
+                  endpoint={props.periodicEndpoint}
+                  key={"trigger_single_read"}
+                  name={"Single Read"}
+                />
+                <div style={{ width: "100%", height: "20px" }}></div>
+                <TriggerReadButton
+                  endpoint={props.periodicEndpoint}
+                  key={"trigger_adc_read"}
+                  name={"ADC Read"}
+                />
+              </TitleCard>
+            </div>
+            <div style={{ width: "49%", float: "right" }}>
+              <TitleCard title="Read settings">
+                <BitAmountInput endpoint={props.periodicEndpoint} />
+                <div style={{ width: "100%", height: "20px" }}></div>
+                <BitDepthInput endpoint={props.periodicEndpoint} />
+              </TitleCard>
+            </div>
+          </TitleCard>
+          <br />
+          <PixelGrid
+            title="Debug Register Input"
+            endpoint={props.periodicEndpoint}
+            gridSize={8192}
+            gridWidth={128}
+            colours={["#000", "#fff"]}
+          />
+          <br />
+          <TitleCard title="Debug Register Output">
+            {Object.keys(props.periodicEndpoint.data).length > 0 ? (
+              <DebugRegisterHeatmap periodicEndpoint={props.periodicEndpoint} />
+            ) : (
+              <>
+                <p style={{ color: "red" }}>
+                  Error - no data received from garud detector adapter
+                </p>
+              </>
+            )}
+          </TitleCard>
+          <br />
+        </>
+      ) : (
+        <>
+          <p style={{ color: "red" }}>
+            Error - no data received from garud detector adapter
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
+
+function Sensor_Stimulus(props) {
+  return (
+    <div className="odin-server">
+      <div
+        style={{
+          width: "100%",
+        }}
+      >
+        <TitleCard title="FW/SW Sensor Stimulus">
+          <div className="wrap-and-compress">
+            {Object.keys(props.periodicEndpoint.data).length > 0 ? (
+              <BitToggles
+                periodicEndpoint={props.periodicEndpoint}
+                debugInputList={debugInputList}
+              />
+            ) : (
+              <>
+                <p style={{ color: "red" }}>
+                  Error - no data received from garud detector adapter
+                </p>
+              </>
+            )}
+          </div>
+        </TitleCard>
+      </div>
+    </div>
+  );
+}
+
+function Pulse_Generator(props) {
+  return (
+    <div className="odin-server">
+      <TitleCard title="Chip Stimulus Bit Displays">
+        <div
+          style={{
+            columnCount: "2",
+          }}
+        >
+          <ClockGraphs
+            periodicEndpoint={props.periodicEndpoint}
+            maxSignalRange={props.maxSignalRange}
+            path={props.path}
+          />
+        </div>
+      </TitleCard>
+      <br />
+      <TitleCard title="Edit Chip Stimulus Bit Settings">
+        <EditableClockGraph
+          periodicEndpoint={props.periodicEndpoint}
+          maxSignalRange={props.maxSignalRange}
+          path={props.path}
+        />
+      </TitleCard>
+      <br />
+    </div>
+  );
+}
+
 export default function App() {
   //create the endpoint to use to contact the adapter, at the address specified in the .env file,
   //polling it to get the most recent parameter tree every 500 milliseconds
@@ -147,6 +446,86 @@ export default function App() {
   const maxSignalRange = 4294967295;
 
   return (
+    <>
+      <Navbar />
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Main
+              periodicEndpointPower={periodicEndpointPower}
+              periodicEndpoint={periodicEndpoint}
+            />
+          }
+        ></Route>
+        <Route
+          path="/gpio_direct"
+          element={<GPIO_Direct periodicEndpoint={periodicEndpoint} />}
+        ></Route>
+        <Route
+          path="/configuration"
+          element={<Configuration periodicEndpoint={periodicEndpoint} />}
+        ></Route>
+        <Route
+          path="/debug_register"
+          element={<Debug_Register periodicEndpoint={periodicEndpoint} />}
+        ></Route>
+        <Route
+          path="/sensor_stimulus"
+          element={<Sensor_Stimulus periodicEndpoint={periodicEndpoint} />}
+        ></Route>
+        <Route
+          path="/pulse_generator_1"
+          element={
+            <Pulse_Generator
+              periodicEndpoint={periodicEndpoint}
+              maxSignalRange={maxSignalRange}
+              path={[
+                "application",
+                "pulse_generators",
+                "pulse_generator_0",
+                "channels",
+              ]}
+            />
+          }
+        ></Route>
+        <Route
+          path="/pulse_generator_2"
+          element={
+            <Pulse_Generator
+              periodicEndpoint={periodicEndpoint}
+              maxSignalRange={maxSignalRange}
+              path={[
+                "application",
+                "pulse_generators",
+                "pulse_generator_1",
+                "channels",
+              ]}
+            />
+          }
+        ></Route>
+        <Route
+          path="/detector_json"
+          element={
+            <JSON_Display
+              title={"Detector JSON Data"}
+              periodicEndpoint={periodicEndpoint}
+            />
+          }
+        ></Route>
+        <Route
+          path="/power_supply_json"
+          element={
+            <JSON_Display
+              title={"Power Supply JSON Data"}
+              periodicEndpoint={periodicEndpointPower}
+            />
+          }
+        ></Route>
+      </Routes>
+    </>
+  );
+  return (
     <OdinApp
       title="GARUD"
       navLinks={[
@@ -163,341 +542,58 @@ export default function App() {
       icon_src="odin.png"
     >
       <Container>
-        <div className="odin-server">
-          <TitleCard
-            title={
-              <>
-                <p style={{ float: "left" }}>Controls</p>
-              </>
-            }
-          >
-            <PowerDisplay periodicEndpointPower={periodicEndpointPower} />
-            <br />
-            <ClockConfigSelect periodicEndpoint={periodicEndpoint} />
-          </TitleCard>
-          <br />
-        </div>
+        <Main
+          periodicEndpointPower={periodicEndpointPower}
+          periodicEndpoint={periodicEndpoint}
+        />
       </Container>
       <Container>
-        <div className="odin-server">
-          <TitleCard
-            title={
-              <>
-                <p style={{ float: "left" }}>Controls</p>
-                <SaveLoadBar endpoint={periodicEndpoint} />
-              </>
-            }
-          >
-            <div className="wrap-and-compress">
-              {Object.keys(periodicEndpoint.data).length > 0 ? (
-                <Toggles
-                  periodicEndpoint={periodicEndpoint}
-                  isOutput={true}
-                  debugInputList={debugInputList}
-                />
-              ) : (
-                <>
-                  <p style={{ color: "red" }}>
-                    Error - no data received from garud detector adapter
-                  </p>
-                </>
-              )}
-            </div>
-          </TitleCard>
-          <br />
-          <TitleCard title="Debug inputs">
-            <div className="overlay" />
-            <div className="wrap-and-compress">
-              {Object.keys(periodicEndpoint.data).length > 0 ? (
-                <Toggles
-                  periodicEndpoint={periodicEndpoint}
-                  isOutput={false}
-                  debugInputList={debugInputList}
-                />
-              ) : (
-                <>
-                  <p style={{ color: "red" }}>
-                    Error - no data received from garud detector adapter
-                  </p>
-                </>
-              )}
-            </div>
-          </TitleCard>
-          <br />
-        </div>
+        <GPIO_Direct periodicEndpoint={periodicEndpoint} />
       </Container>
       <Container>
-        <div className="odin-server">
-          <TitleCard
-            title={
-              <>
-                <p style={{ float: "left" }}>DACs</p>{" "}
-                <ApplyResetConfigButtons
-                  periodicEndpoint={periodicEndpoint}
-                  func_to_run={resetDACsToValues}
-                  type={"dacs"}
-                />
-                <input
-                  onClick={() => ResetDACs(periodicEndpoint)}
-                  style={{ float: "right", marginRight: "5px" }}
-                  className="nice-button"
-                  type="button"
-                  value="Reset to defaults"
-                />
-              </>
-            }
-          >
-            <div>
-              {Object.keys(periodicEndpoint.data).length > 0 ? (
-                <DACReadouts periodicEndpoint={periodicEndpoint} />
-              ) : (
-                <>
-                  <p style={{ color: "red" }}>
-                    Error - no data received from garud detector adapter
-                  </p>
-                </>
-              )}
-            </div>
-          </TitleCard>
-          <br />
-          <TitleCard
-            title={
-              <>
-                <p style={{ float: "left" }}>Configuration Shift-Register</p>
-                <ApplyResetConfigButtons
-                  periodicEndpoint={periodicEndpoint}
-                  func_to_run={resetSRConfig}
-                  type={"configbits"}
-                />
-              </>
-            }
-          >
-            <div>
-              {Object.keys(periodicEndpoint.data).length > 0 ? (
-                <ConfigDisplay periodicEndpoint={periodicEndpoint} />
-              ) : (
-                <>
-                  <p style={{ color: "red" }}>
-                    Error - no data received from garud detector adapter
-                  </p>
-                </>
-              )}
-            </div>
-          </TitleCard>
-          <br />
-          <TitleCard
-            title={
-              <>
-                <p style={{ float: "left" }}>Readout Config</p>
-                <ApplyResetConfigButtons
-                  periodicEndpoint={periodicEndpoint}
-                  func_to_run={resetReadoutConfig}
-                  type={"readoutconfig"}
-                />
-              </>
-            }
-          >
-            <div>
-              {Object.keys(periodicEndpoint.data).length > 0 ? (
-                <ReadoutConfigDisplay periodicEndpoint={periodicEndpoint} />
-              ) : (
-                <>
-                  <p style={{ color: "red" }}>
-                    Error - no data received from garud detector adapter
-                  </p>
-                </>
-              )}
-            </div>
-          </TitleCard>
-          <br />
-        </div>
+        <Configuration periodicEndpoint={periodicEndpoint} />
       </Container>
       <Container>
-        <div className="odin-server">
-          {Object.keys(periodicEndpoint.data).length > 0 ? (
-            <>
-              <TitleCard title="Menu">
-                <div style={{ width: "49%", float: "left" }}>
-                  <TitleCard title="Trigger Reads">
-                    <TriggerReadButton
-                      endpoint={periodicEndpoint}
-                      key={"trigger_single_read"}
-                      name={"Single Read"}
-                    />
-                    <div style={{ width: "100%", height: "20px" }}></div>
-                    <TriggerReadButton
-                      endpoint={periodicEndpoint}
-                      key={"trigger_adc_read"}
-                      name={"ADC Read"}
-                    />
-                  </TitleCard>
-                </div>
-                <div style={{ width: "49%", float: "right" }}>
-                  <TitleCard title="Read settings">
-                    <BitAmountInput endpoint={periodicEndpoint} />
-                    <div style={{ width: "100%", height: "20px" }}></div>
-                    <BitDepthInput endpoint={periodicEndpoint} />
-                  </TitleCard>
-                </div>
-              </TitleCard>
-              <br />
-              <PixelGrid
-                title="Debug Register Input"
-                endpoint={periodicEndpoint}
-                gridSize={8192}
-                gridWidth={128}
-                colours={["#000", "#fff"]}
-              />
-              <br />
-              <TitleCard title="Debug Register Output">
-                {Object.keys(periodicEndpoint.data).length > 0 ? (
-                  <DebugRegisterHeatmap periodicEndpoint={periodicEndpoint} />
-                ) : (
-                  <>
-                    <p style={{ color: "red" }}>
-                      Error - no data received from garud detector adapter
-                    </p>
-                  </>
-                )}
-              </TitleCard>
-              <br />
-            </>
-          ) : (
-            <>
-              <p style={{ color: "red" }}>
-                Error - no data received from garud detector adapter
-              </p>
-            </>
-          )}
-        </div>
+        <Debug_Register periodicEndpoint={periodicEndpoint} />
       </Container>
       <Container>
-        <div className="odin-server">
-          <div
-            style={{
-              width: "100%",
-            }}
-          >
-            <TitleCard title="FW/SW Sensor Stimulus">
-              <div className="wrap-and-compress">
-                {Object.keys(periodicEndpoint.data).length > 0 ? (
-                  <BitToggles
-                    periodicEndpoint={periodicEndpoint}
-                    debugInputList={debugInputList}
-                  />
-                ) : (
-                  <>
-                    <p style={{ color: "red" }}>
-                      Error - no data received from garud detector adapter
-                    </p>
-                  </>
-                )}
-              </div>
-            </TitleCard>
-          </div>
-        </div>
+        <Sensor_Stimulus periodicEndpoint={periodicEndpoint} />
       </Container>
       <Container>
-        <div className="odin-server">
-          <TitleCard title="Chip Stimulus Bit Displays">
-            <div
-              style={{
-                columnCount: "2",
-              }}
-            >
-              <ClockGraphs
-                periodicEndpoint={periodicEndpoint}
-                maxSignalRange={maxSignalRange}
-                path={[
-                  "application",
-                  "pulse_generators",
-                  "pulse_generator_0",
-                  "channels",
-                ]}
-              />
-            </div>
-          </TitleCard>
-          <br />
-          <TitleCard title="Edit Chip Stimulus Bit Settings">
-            <EditableClockGraph
-              periodicEndpoint={periodicEndpoint}
-              maxSignalRange={maxSignalRange}
-              path={[
-                "application",
-                "pulse_generators",
-                "pulse_generator_0",
-                "channels",
-              ]}
-            />
-          </TitleCard>
-          <br />
-        </div>
+        <Pulse_Generator
+          periodicEndpoint={periodicEndpoint}
+          maxSignalRange={maxSignalRange}
+          path={[
+            "application",
+            "pulse_generators",
+            "pulse_generator_0",
+            "channels",
+          ]}
+        />
       </Container>
       <Container>
-        <div className="odin-server">
-          <TitleCard title="Chip Stimulus Bit Displays">
-            <div
-              style={{
-                columnCount: "2",
-              }}
-            >
-              <ClockGraphs
-                periodicEndpoint={periodicEndpoint}
-                maxSignalRange={maxSignalRange}
-                path={[
-                  "application",
-                  "pulse_generators",
-                  "pulse_generator_1",
-                  "channels",
-                ]}
-              />
-            </div>
-          </TitleCard>
-          <br />
-          <TitleCard title="Edit Chip Stimulus Bit Settings">
-            <EditableClockGraph
-              periodicEndpoint={periodicEndpoint}
-              maxSignalRange={maxSignalRange}
-              path={[
-                "application",
-                "pulse_generators",
-                "pulse_generator_1",
-                "channels",
-              ]}
-            />
-          </TitleCard>
-          <br />
-        </div>
+        <Pulse_Generator
+          periodicEndpoint={periodicEndpoint}
+          maxSignalRange={maxSignalRange}
+          path={[
+            "application",
+            "pulse_generators",
+            "pulse_generator_1",
+            "channels",
+          ]}
+        />
       </Container>
       <Container>
-        <div className="odin-server">
-          <TitleCard title="Detector JSON Data">
-            <pre
-              dangerouslySetInnerHTML={{
-                __html: format_json(
-                  JSON.stringify(periodicEndpoint.data, null, "    "),
-                  1
-                ),
-              }}
-            ></pre>
-          </TitleCard>
-          <br />
-        </div>
+        <JSON_Display
+          title={"Detector JSON Data"}
+          periodicEndpoint={periodicEndpoint}
+        />
       </Container>
       <Container>
-        <div className="odin-server">
-          <TitleCard title="Power Supply JSON Data">
-            <pre
-              dangerouslySetInnerHTML={{
-                __html: format_json(
-                  JSON.stringify(periodicEndpointPower.data, null, "    "),
-                  1
-                ),
-              }}
-            ></pre>
-          </TitleCard>
-          <br />
-        </div>
+        <JSON_Display
+          title={"Power Supply JSON Data"}
+          periodicEndpoint={periodicEndpointPower}
+        />
       </Container>
     </OdinApp>
   );
