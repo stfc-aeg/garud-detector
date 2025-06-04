@@ -1,16 +1,16 @@
 .odin-server {
-  padding-top:15px;
-  padding-bottom:0px;
-  width:100%;
-  margin-left:0px;
-  margin-bottom:0px;
+  padding-top: 15px;
+  padding-bottom: 0px;
+  width: 100%;
+  margin-left: 0px;
+  margin-bottom: 0px;
 }
 
-.container{
+.container {
   max-width: 96%;
 }
 
-.card{
+.card {
   margin-bottom: 0px !important;
 }
 
@@ -18,38 +18,41 @@
 .navbar {
   z-index: 99;
   position: sticky;
-  top:0;
+  top: 0;
 }
 
-.dropdown{
-  display: inline-block
+.dropdown {
+  display: inline-block;
 }
 
-.powerSupply{
-  width:calc(33% - 60px); 
-  float:left;
-  height:47px;
+.WeirdAutoScale {
+  width: calc(12% + 120px);
 }
 
-.BitLengthInput{
-  width:calc(100% - 270px)
+.powerSupply {
+  width: calc(30% - 40px);
+  float: left;
+  height: 47px;
 }
 
-.BitDepthInput{
-  width:calc(100% - 280px)
+.BitLengthInput {
+  width: calc(100% - 270px);
 }
 
+.BitDepthInput {
+  width: calc(100% - 280px);
+}
 
-.wrap-and-compress{
+.wrap-and-compress {
   flex-direction: row;
   flex-wrap: wrap;
-  display:flex;
-  align-items:stretch;
+  display: flex;
+  align-items: stretch;
   justify-content: left;
-  gap:1%;
-  width:100%;
+  gap: 1%;
+  width: 100%;
 }
-.grid{
+.grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-column-gap: 10px;
@@ -62,92 +65,91 @@
   flex-wrap: wrap;
 }
 
-.textInput{
-  width:10%;
+.textInput {
+  width: 10%;
   flex-grow: 1;
   flex-shrink: 1;
-  border-color:#dee2e6; 
-  border-style:solid;
-  border-width:1px;
-  border-radius:5px;
-  transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+  border-color: #dee2e6;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 5px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-.control{
+.control {
   flex-direction: row;
   flex-wrap: wrap;
-  display:flex;
-  align-items:stretch;
+  display: flex;
+  align-items: stretch;
   justify-content: center;
-  gap:1%;
-  width:100%;
+  gap: 1%;
+  width: 100%;
 }
 
-#label{
-  width:calc(100% - 55px);
+#label {
+  width: calc(100% - 55px);
   margin-right: 0px;
-  float:left;
-  justify-content:left;
-  text-align:left;
+  float: left;
+  justify-content: left;
+  text-align: left;
   margin-bottom: 0px;
   word-wrap: break-word;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
-
 /*Hide up and down arrows on number inputs*/
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
-    /* display: none; <- Crashes Chrome on hover */
-    -webkit-appearance: none;
-    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+  /* display: none; <- Crashes Chrome on hover */
+  -webkit-appearance: none;
+  margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
 }
 
-input[type=number] {
-    -moz-appearance:textfield; /* Firefox */
-    appearance: textfield;
+input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+  appearance: textfield;
 }
 
-.overlay{
-  background-color:rgba(0,0,0,0);; 
-  position:absolute; 
-  width:calc(100% - 2rem); 
-  height:calc(100% - 41px - 2rem); 
-  z-index:55;
+.overlay {
+  background-color: rgba(0, 0, 0, 0);
+  position: absolute;
+  width: calc(100% - 2rem);
+  height: calc(100% - 41px - 2rem);
+  z-index: 55;
 }
 
-.nice-button{
-  color:white;
-  background-color:#0d6efd;
-  border-color:#0d6efd;
-  border-style:solid;
-  border-radius:5px;
-  height:38px;
+.nice-button {
+  color: white;
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  border-style: solid;
+  border-radius: 5px;
+  height: 38px;
 }
 
-.disabled-button{
-  color:white;
-  background-color:#a9a9a9;
-  border-color:#a9a9a9;
-  border-style:solid;
-  border-radius:5px;
-  height:38px;
+.disabled-button {
+  color: white;
+  background-color: #a9a9a9;
+  border-color: #a9a9a9;
+  border-style: solid;
+  border-radius: 5px;
+  height: 38px;
 }
 
 /* formatting for displaying the jsons with strings, numbers, booleans and brackets different colours. */
-.string{
-  color:brown;
+.string {
+  color: brown;
 }
-.number{
-  color:mediumaquamarine;
+.number {
+  color: mediumaquamarine;
 }
-.bracket{
-  color:darkgoldenrod;
+.bracket {
+  color: darkgoldenrod;
 }
-.bool{
-  color:blue;
+.bool {
+  color: blue;
 }
-.null{
-  color:red;
+.null {
+  color: red;
 }
