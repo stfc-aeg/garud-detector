@@ -100,23 +100,43 @@ export var Toggle = React.forwardRef((props, ref) => {
   if (props.label != undefined) {
     label = props.label;
   }
-
-  return (
-    <div style={{ width: "24%", marginBottom: "1%" }}>
-      <ToggleSwitch
-        disabled={props.disabled}
-        ref={ref}
-        label={label}
-        onClick={onToggled}
-        color={props.color}
-        checked={
-          props.endpoint?.data
-            ? Boolean(
-                getNested(props.endpoint.data, props.path)[props.accessor]
-              )
-            : false
-        }
-      />
-    </div>
-  );
+  if (props.fixWidth == undefined || props.fixWidth == null || props.fixWidth) {
+    return (
+      <div style={{ width: "24%", marginBottom: "1%" }}>
+        <ToggleSwitch
+          disabled={props.disabled}
+          ref={ref}
+          label={label}
+          onClick={onToggled}
+          color={props.color}
+          checked={
+            props.endpoint?.data
+              ? Boolean(
+                  getNested(props.endpoint.data, props.path)[props.accessor]
+                )
+              : false
+          }
+        />
+      </div>
+    );
+  } else {
+    return (
+      <div style={{ marginBottom: "1%" }}>
+        <ToggleSwitch
+          disabled={props.disabled}
+          ref={ref}
+          label={label}
+          onClick={onToggled}
+          color={props.color}
+          checked={
+            props.endpoint?.data
+              ? Boolean(
+                  getNested(props.endpoint.data, props.path)[props.accessor]
+                )
+              : false
+          }
+        />
+      </div>
+    );
+  }
 });

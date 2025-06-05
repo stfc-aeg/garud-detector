@@ -2,28 +2,111 @@ import { useState, useEffect, createRef, useRef } from "react";
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Plot from "react-plotly.js";
-import { DropdownSelector } from "odin-react";
+import { DropdownSelector, TitleCard } from "odin-react";
 import Dropdown from "react-bootstrap/Dropdown";
 import { getNested } from "./helperFunctions";
+
+function ToggleButton(props) {
+  function updateValue() {
+    props.periodicEndpoint
+      .put(
+        {
+          ["enable"]: !getNested(
+            props.periodicEndpoint.data,
+            props.path.slice(0, props.path.length - 1)
+          )["enable"],
+        },
+        props.path.slice(0, props.path.length - 1).join("/")
+      )
+      .then((response) => {
+        props.periodicEndpoint.mergeData(
+          response,
+          props.path.slice(0, props.path.length - 1).join("/")
+        );
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }
+  var color = "#80F080";
+  var text = "Start";
+  if (
+    Boolean(
+      getNested(
+        props.periodicEndpoint.data,
+        props.path.slice(0, props.path.length - 1)
+      )["enable"]
+    )
+  ) {
+    color = "#FF8080";
+    text = "Reset";
+  }
+  return (
+    <input
+      style={{
+        backgroundColor: color,
+        color: "white",
+        borderColor: color,
+        borderStyle: "solid",
+        borderRadius: "5px",
+      }}
+      type="Button"
+      readOnly
+      onClick={updateValue}
+      value={text}
+    />
+  );
+}
+
+function TextEntries(props) {
+  var textEntries = [];
+  for (let i = 0; i < props.tps.length; i++) {
+    textEntries.push(
+      <p key={i} style={{ display: "inline-block", width: "18%" }}>
+        Transition point {i + 1}:
+        <br />
+        <input
+          type="number"
+          ref={props.tprefs[i]}
+          value={
+            props.tprefs[i].current === document.activeElement
+              ? props.tprefs[i].value
+              : props.tps[i].x0
+          }
+          onKeyDown={(event) => props.alterLineValue(String(i + 2), event)}
+          //onChange={(event) => moveLines("0", Number(event.target.value))}
+        />
+      </p>
+    );
+  }
+  return textEntries;
+}
 
 export function EditableClockGraph(props) {
   if (Object.keys(props.periodicEndpoint.data).length == 0) {
     return (
-      <p style={{ color: "red" }}>
-        Error - no data received from garud detector adapter
-      </p>
+      <TitleCard
+        title={
+          <>
+            <p style={{ marginBottom: "0px", float: "left" }}>
+              Edit Chip Stimulus Bit Settings
+            </p>
+          </>
+        }
+      >
+        <p style={{ color: "red" }}>
+          Error - no data received from garud detector adapter
+        </p>
+      </TitleCard>
     );
   }
-  const tp1ref = useRef();
-  const tp2ref = useRef();
-  const tp3ref = useRef();
-  const tp4ref = useRef();
+
   const lpref = useRef();
-  var [periodicEndpoint, maxSignalRange] = [
-    props.periodicEndpoint,
-    props.maxSignalRange,
-  ];
-  const [signalRange, setSignalRange] = useState([0, maxSignalRange]);
+  var periodicEndpoint = props.periodicEndpoint;
+  var maxSignalRange = getNested(
+    periodicEndpoint.data,
+    props.path.slice(0, props.path.length - 1)
+  )["counter_max"];
   const [index, setIndex] = useState(0);
   const [mp, setMp] = useState({
     x0: 0,
@@ -47,62 +130,6 @@ export function EditableClockGraph(props) {
     hoverinfo: "none",
   });
 
-  var tp1 = {
-    x0: getNested(periodicEndpoint.data, props.path)[String(index)][
-      "transitions"
-    ]["0"],
-    y0: -100,
-    x1: getNested(periodicEndpoint.data, props.path)[String(index)][
-      "transitions"
-    ]["0"],
-    y1: 100,
-    line: {
-      color: "green",
-      width: 3,
-    },
-  };
-  var tp2 = {
-    x0: getNested(periodicEndpoint.data, props.path)[String(index)][
-      "transitions"
-    ]["1"],
-    y0: -100,
-    x1: getNested(periodicEndpoint.data, props.path)[String(index)][
-      "transitions"
-    ]["1"],
-    y1: 100,
-    line: {
-      color: "green",
-      width: 3,
-    },
-  };
-  var tp3 = {
-    x0: getNested(periodicEndpoint.data, props.path)[String(index)][
-      "transitions"
-    ]["2"],
-    y0: -100,
-    x1: getNested(periodicEndpoint.data, props.path)[String(index)][
-      "transitions"
-    ]["2"],
-    y1: 100,
-    line: {
-      color: "green",
-      width: 3,
-    },
-  };
-  var tp4 = {
-    x0: getNested(periodicEndpoint.data, props.path)[String(index)][
-      "transitions"
-    ]["3"],
-    y0: -100,
-    x1: getNested(periodicEndpoint.data, props.path)[String(index)][
-      "transitions"
-    ]["3"],
-    y1: 100,
-    line: {
-      color: "green",
-      width: 3,
-    },
-  };
   var lp = {
     x0: getNested(periodicEndpoint.data, props.path)[String(index)][
       "loop_point"
@@ -118,18 +145,49 @@ export function EditableClockGraph(props) {
     },
   };
 
+  var tps = [];
+  var tprefs = [];
+  for (
+    let i = 0;
+    i <
+    Object.keys(
+      getNested(periodicEndpoint.data, props.path)[String(index)]["transitions"]
+    ).length;
+    i++
+  ) {
+    tps.push({
+      x0: getNested(periodicEndpoint.data, props.path)[String(index)][
+        "transitions"
+      ][String(i)],
+      y0: -100,
+      x1: getNested(periodicEndpoint.data, props.path)[String(index)][
+        "transitions"
+      ][String(i)],
+      y1: 100,
+      line: {
+        color: "green",
+        width: 3,
+      },
+    });
+    tprefs.push(useRef());
+  }
+
+  const [signalRange, setSignalRange] = useState([
+    0,
+    Math.min(Math.max(lp.x0 * 1.1, lp.x0 + 1, 2), maxSignalRange),
+  ]);
+
   useEffect(() => {
     calculateWaveShape("5", 0);
-  }, [tp1.x0, tp2.x0, tp3.x0, tp4.x0, lp.x0]);
+  }, [JSON.stringify(tps), lp.x0]);
 
   function calculateWaveShape(shapeIndex, value, startingLow = true) {
-    console.log("Recalculating");
-    var xValues = [
-      Math.round(tp1.x0),
-      Math.round(tp2.x0),
-      Math.round(tp3.x0),
-      Math.round(tp4.x0),
-    ];
+    var xValues = [];
+
+    for (let i = 0; i < tps.length; i++) {
+      xValues.push(Math.round(tps[i].x0));
+    }
+
     if (Number(shapeIndex) <= 3) xValues[Number(shapeIndex)] = value;
     var lpx0copy = lp.x0;
     if (Number(shapeIndex) == 4) lpx0copy = value;
@@ -142,26 +200,38 @@ export function EditableClockGraph(props) {
         break;
       }
     }
+    var low = Boolean(
+      getNested(
+        props.periodicEndpoint.data,
+        props.path.slice(0, props.path.length - 1)
+      )["preset"]
+    );
     var x = [0];
-    var y = [0.001];
-    var low = startingLow;
+    var y = [
+      getNested(
+        props.periodicEndpoint.data,
+        props.path.slice(0, props.path.length - 1)
+      )["preset"] == 0
+        ? 0.001
+        : 0.999,
+    ];
     for (let i = 0; i < xValues.length; i++) {
       x.push(xValues[i]);
       x.push(xValues[i]);
       if (low) {
-        y.push(0.001);
         y.push(0.999);
+        y.push(0.001);
       } else {
-        y.push(0.999);
         y.push(0.001);
+        y.push(0.999);
       }
       low = !low;
     }
     x.push(Math.round(lpx0copy));
     if (low) {
-      y.push(0.001);
-    } else {
       y.push(0.999);
+    } else {
+      y.push(0.001);
     }
     setWave({
       x: x,
@@ -177,15 +247,10 @@ export function EditableClockGraph(props) {
   }
 
   function moveLines(shapeIndex, value) {
-    if (
-      shapeIndex == "0" ||
-      shapeIndex == "1" ||
-      shapeIndex == "2" ||
-      shapeIndex == "3"
-    ) {
+    if (Number(shapeIndex) > 1) {
       props.periodicEndpoint
         .put(
-          { [shapeIndex]: Math.round(Math.min(value, maxSignalRange)) },
+          { [shapeIndex - 2]: Math.round(Math.min(value, maxSignalRange)) },
           props.path.join("/") + "/" + index + "/transitions"
         )
         .then((response) => {
@@ -197,7 +262,7 @@ export function EditableClockGraph(props) {
         .catch((err) => {
           console.error(err);
         });
-    } else if (shapeIndex == "4") {
+    } else if (shapeIndex == "0") {
       var newPosition = Math.max(
         Math.round(Math.min(value, maxSignalRange)),
         mp.x0 + 1
@@ -222,17 +287,10 @@ export function EditableClockGraph(props) {
         Math.min(Math.max(value + range * 0.1, value + 1, 2), maxSignalRange),
       ]);
       var needsMoving = [];
-      if (Math.round(tp1.x0) > Math.round(lp.x0)) {
-        needsMoving.push("0");
-      }
-      if (Math.round(tp2.x0) > Math.round(lp.x0)) {
-        needsMoving.push("1");
-      }
-      if (Math.round(tp3.x0) > Math.round(lp.x0)) {
-        needsMoving.push("2");
-      }
-      if (Math.round(tp4.x0) > Math.round(lp.x0)) {
-        needsMoving.push("3");
+      for (let i = 0; i < tps.length; i++) {
+        if (Math.round(tps[i].x0) > Math.round(lp.x0)) {
+          needsMoving.push(String(i));
+        }
       }
       for (let i = 0; i < needsMoving.length; i++) {
         var position =
@@ -252,7 +310,7 @@ export function EditableClockGraph(props) {
             console.error(err);
           });
       }
-    } else if (shapeIndex == "5") {
+    } else if (shapeIndex == "1") {
       var newPosition = Math.max(Math.round(Math.min(value, lp.x0 - 1)), 0);
       var range = lp.x0 - newPosition;
       setMp({
@@ -271,17 +329,10 @@ export function EditableClockGraph(props) {
       ]);
 
       var needsMoving = [];
-      if (Math.round(tp1.x0) > Math.round(lp.x0)) {
-        needsMoving.push("0");
-      }
-      if (Math.round(tp2.x0) > Math.round(lp.x0)) {
-        needsMoving.push("1");
-      }
-      if (Math.round(tp3.x0) > Math.round(lp.x0)) {
-        needsMoving.push("2");
-      }
-      if (Math.round(tp4.x0) > Math.round(lp.x0)) {
-        needsMoving.push("3");
+      for (let i = 0; i < tps.length; i++) {
+        if (Math.round(tps[i].x0) > Math.round(lp.x0)) {
+          needsMoving.push(String(i));
+        }
       }
       for (let i = 0; i < needsMoving.length; i++) {
         var position =
@@ -302,7 +353,6 @@ export function EditableClockGraph(props) {
           });
       }
     }
-    //calculateWaveShape(shapeIndex, value);
   }
 
   function onLineMovement(event) {
@@ -344,152 +394,125 @@ export function EditableClockGraph(props) {
     calculateWaveShape("4", maxSignalRange);
   }
 
+  function alterLineValue(shapeIndex, event) {
+    if (event.key == "Enter") {
+      moveLines(shapeIndex, Number(event.target.value));
+    }
+  }
+
   return (
-    <div style={{ marginBottom: "5px" }}>
-      <div style={{ display: "inline-block" }}>
-        <DropdownSelector
-          buttonText={
-            "Clock Stimulus Bit: " + String(index) || "Clock Stimulus Bit: None"
-          }
-          onSelect={(event) => setIndex(event)}
-        >
-          {Object.keys(getNested(periodicEndpoint.data, props.path)).map(
-            (selection, i) => (
-              <Dropdown.Item
-                eventKey={String(selection)}
-                key={i}
-                active={String(selection) == String(index)}
-              >
-                {String(selection)}
-              </Dropdown.Item>
-            )
-          )}
-        </DropdownSelector>
-      </div>
-      <Plot
-        style={{ width: "100%", height: "150px" }}
-        onRelayout={onLineMovement}
-        data={[wave]}
-        config={{
-          editable: true,
-          responsive: true,
-        }}
-        layout={{
-          autosize: true,
-          title: {
-            text: "Clock settings for bit " + String(index),
-            subtitle: {
-              text: " ",
-              font: {
-                size: 1,
-              },
-            },
-          },
-          margin: {
-            l: 50,
-            r: 50,
-            t: 50,
-            b: 20,
-          },
-          xaxis: {
-            fixedrange: true,
-            range: signalRange,
-            exponentformat: "e",
-            //tickformat: "X",
+    <TitleCard
+      title={
+        <>
+          <p style={{ marginBottom: "0px", float: "left" }}>
+            Edit Chip Stimulus Bit Settings
+          </p>
+        </>
+      }
+    >
+      <div style={{ marginBottom: "5px" }}>
+        <div style={{ display: "inline-block" }}>
+          <DropdownSelector
+            buttonText={
+              "Clock Stimulus Bit: " + String(index) ||
+              "Clock Stimulus Bit: None"
+            }
+            onSelect={(event) => setIndex(event)}
+          >
+            {Object.keys(getNested(periodicEndpoint.data, props.path)).map(
+              (selection, i) => (
+                <Dropdown.Item
+                  eventKey={String(selection)}
+                  key={i}
+                  active={String(selection) == String(index)}
+                >
+                  {String(selection)}
+                </Dropdown.Item>
+              )
+            )}
+          </DropdownSelector>
+        </div>
+        <Plot
+          style={{ width: "100%", height: "150px" }}
+          onRelayout={onLineMovement}
+          data={[wave]}
+          config={{
+            editable: true,
+            responsive: true,
+          }}
+          layout={{
+            autosize: true,
             title: {
-              text: " ",
-              font: {
-                size: 1,
+              text: "Clock settings for bit " + String(index),
+              subtitle: {
+                text: " ",
+                font: {
+                  size: 1,
+                },
               },
             },
-          },
-          yaxis: {
-            fixedrange: true,
-            visible: false,
-            range: [0, 1],
-          },
-          shapes: [tp1, tp2, tp3, tp4, lp, mp],
-        }}
-      />
-      <p style={{ display: "inline-block", width: "18%" }}>
-        Transition point 1:
-        <br />
-        <input
-          type="number"
-          ref={tp1ref}
-          value={
-            tp1ref.current === document.activeElement ? tp1ref.value : tp1.x0
-          }
-          onChange={(event) => moveLines("0", Number(event.target.value))}
-          //onBlur={(event) => moveLines("0", Number(event.target.value))}
+            margin: {
+              l: 50,
+              r: 50,
+              t: 50,
+              b: 20,
+            },
+            xaxis: {
+              fixedrange: true,
+              range: signalRange,
+              exponentformat: "e",
+              //tickformat: "X",
+              title: {
+                text: " ",
+                font: {
+                  size: 1,
+                },
+              },
+            },
+            yaxis: {
+              fixedrange: true,
+              visible: false,
+              range: [0, 1],
+            },
+            shapes: [lp, mp, ...tps],
+          }}
         />
-      </p>
-      <p style={{ display: "inline-block", width: "18%" }}>
-        Transition point 2:
-        <br />{" "}
-        <input
-          type="number"
-          ref={tp2ref}
-          value={
-            tp2ref.current === document.activeElement ? tp2ref.value : tp2.x0
-          }
-          onChange={(event) => moveLines("1", Number(event.target.value))}
-          //onBlur={(event) => moveLines("1", Number(event.target.value))}
+        <TextEntries
+          tprefs={tprefs}
+          tps={tps}
+          alterLineValue={alterLineValue}
         />
-      </p>
-      <p style={{ display: "inline-block", width: "18%" }}>
-        Transition point 3:
-        <br />{" "}
+        <p style={{ display: "inline-block", width: "18%" }}>
+          Loop point: <br />
+          <input
+            type="number"
+            ref={lpref}
+            value={
+              lpref.current === document.activeElement ? lpref.value : lp.x0
+            }
+            onKeyDown={(event) => alterLineValue("4", event)}
+            //onChange={(event) => moveLines("4", Number(event.target.value))}
+          />
+        </p>
         <input
-          type="number"
-          ref={tp3ref}
-          value={
-            tp3ref.current === document.activeElement ? tp3ref.value : tp3.x0
-          }
-          onChange={(event) => moveLines("2", Number(event.target.value))}
-          //onBlur={(event) => moveLines("2", Number(event.target.value))}
+          style={{ display: "inline-block", width: "10%" }}
+          onClick={resetRange}
+          className="nice-button"
+          type="button"
+          value="Reset Range"
+          readOnly
         />
-      </p>
-      <p style={{ display: "inline-block", width: "18%" }}>
-        Transition point 4:
-        <br />{" "}
-        <input
-          type="number"
-          ref={tp4ref}
-          value={
-            tp4ref.current === document.activeElement ? tp4ref.value : tp4.x0
-          }
-          onChange={(event) => moveLines("3", Number(event.target.value))}
-          //onBlur={(event) => moveLines("3", Number(event.target.value))}
-        />
-      </p>
-      <p style={{ display: "inline-block", width: "18%" }}>
-        Loop point: <br />
-        <input
-          type="number"
-          ref={lpref}
-          value={lpref.current === document.activeElement ? lpref.value : lp.x0}
-          onChange={(event) => moveLines("4", Number(event.target.value))}
-          //onBlur={(event) => moveLines("4", Number(event.target.value))}
-        />
-      </p>
-      <input
-        style={{ display: "inline-block", width: "10%" }}
-        onClick={resetRange}
-        className="nice-button"
-        type="button"
-        value="Reset Range"
-      />
-    </div>
+      </div>
+    </TitleCard>
   );
 }
 
 function ReadonlyClockGraph(props) {
-  var [periodicEndpoint, index, maxSignalRange] = [
-    props.periodicEndpoint,
-    props.index,
-    props.maxSignalRange,
-  ];
+  var [periodicEndpoint, index] = [props.periodicEndpoint, props.index];
+  var maxSignalRange = getNested(
+    periodicEndpoint.data,
+    props.path.slice(0, props.path.length - 1)
+  )["counter_max"];
   const [displayClockRange, setDisplayClockRange] = useState([
     0,
     maxSignalRange,
@@ -507,62 +530,30 @@ function ReadonlyClockGraph(props) {
       hoverinfo: "none",
     },
   ]);
-  var tp1 = {
-    x0: getNested(periodicEndpoint.data, props.path)[String(index)][
-      "transitions"
-    ]["0"],
-    y0: -100,
-    x1: getNested(periodicEndpoint.data, props.path)[String(index)][
-      "transitions"
-    ]["0"],
-    y1: 100,
-    line: {
-      color: "green",
-      width: 3,
-    },
-  };
-  var tp2 = {
-    x0: getNested(periodicEndpoint.data, props.path)[String(index)][
-      "transitions"
-    ]["1"],
-    y0: -100,
-    x1: getNested(periodicEndpoint.data, props.path)[String(index)][
-      "transitions"
-    ]["1"],
-    y1: 100,
-    line: {
-      color: "green",
-      width: 3,
-    },
-  };
-  var tp3 = {
-    x0: getNested(periodicEndpoint.data, props.path)[String(index)][
-      "transitions"
-    ]["2"],
-    y0: -100,
-    x1: getNested(periodicEndpoint.data, props.path)[String(index)][
-      "transitions"
-    ]["2"],
-    y1: 100,
-    line: {
-      color: "green",
-      width: 3,
-    },
-  };
-  var tp4 = {
-    x0: getNested(periodicEndpoint.data, props.path)[String(index)][
-      "transitions"
-    ]["3"],
-    y0: -100,
-    x1: getNested(periodicEndpoint.data, props.path)[String(index)][
-      "transitions"
-    ]["3"],
-    y1: 100,
-    line: {
-      color: "green",
-      width: 3,
-    },
-  };
+  var tps = [];
+  for (
+    let i = 0;
+    i <
+    Object.keys(
+      getNested(periodicEndpoint.data, props.path)[String(index)]["transitions"]
+    ).length;
+    i++
+  ) {
+    tps.push({
+      x0: getNested(periodicEndpoint.data, props.path)[String(index)][
+        "transitions"
+      ][String(i)],
+      y0: -100,
+      x1: getNested(periodicEndpoint.data, props.path)[String(index)][
+        "transitions"
+      ][String(i)],
+      y1: 100,
+      line: {
+        color: "green",
+        width: 3,
+      },
+    });
+  }
   var lp = {
     x0: getNested(periodicEndpoint.data, props.path)[String(index)][
       "loop_point"
@@ -578,10 +569,7 @@ function ReadonlyClockGraph(props) {
     },
   };
   var shapes = [
-    tp1,
-    tp2,
-    tp3,
-    tp4,
+    ...tps,
     lp,
     {
       x0: 0,
@@ -594,31 +582,16 @@ function ReadonlyClockGraph(props) {
       },
     },
   ];
-  if (Math.round(tp1.x0) > Math.round(lp.x0)) {
-    shapes.splice(shapes.indexOf(tp1), 1);
-  }
-  if (Math.round(tp2.x0) > Math.round(lp.x0)) {
-    shapes.splice(shapes.indexOf(tp2), 1);
-  }
-  if (Math.round(tp3.x0) > Math.round(lp.x0)) {
-    shapes.splice(shapes.indexOf(tp3), 1);
-  }
-  if (Math.round(tp4.x0) > Math.round(lp.x0)) {
-    shapes.splice(shapes.indexOf(tp4), 1);
-  }
 
   useEffect(() => {
     calculateWaveShape();
-  }, [tp1.x0, tp2.x0, tp3.x0, tp4.x0, lp.x0]);
+  }, [JSON.stringify(tps), lp.x0]);
 
   function calculateWaveShape(startingLow = true) {
-    console.log("Recalculating");
-    var xValues = [
-      Math.round(tp1.x0),
-      Math.round(tp2.x0),
-      Math.round(tp3.x0),
-      Math.round(tp4.x0),
-    ];
+    var xValues = [];
+    for (let i = 0; i < tps.length; i++) {
+      xValues.push(Math.round(tps[i].x0));
+    }
     var lpx0copy = lp.x0;
     xValues.sort(function (a, b) {
       return a - b;
@@ -630,25 +603,35 @@ function ReadonlyClockGraph(props) {
       }
     }
     var x = [0];
-    var y = [0.001];
-    var low = startingLow;
+    var y = [
+      getNested(
+        props.periodicEndpoint.data,
+        props.path.slice(0, props.path.length - 1)
+      )["preset"] == 0
+        ? 0.001
+        : 0.999,
+    ];
+    var low = getNested(
+      props.periodicEndpoint.data,
+      props.path.slice(0, props.path.length - 1)
+    )["preset"];
     for (let i = 0; i < xValues.length; i++) {
       x.push(xValues[i]);
       x.push(xValues[i]);
       if (low) {
-        y.push(0.001);
         y.push(0.999);
+        y.push(0.001);
       } else {
-        y.push(0.999);
         y.push(0.001);
+        y.push(0.999);
       }
       low = !low;
     }
     x.push(Math.round(lpx0copy));
     if (low) {
-      y.push(0.001);
-    } else {
       y.push(0.999);
+    } else {
+      y.push(0.001);
     }
     setWave([
       {
@@ -746,5 +729,29 @@ export function ClockGraphs(props) {
       />
     );
   }
-  return clockDisplays;
+  return (
+    <TitleCard
+      title={
+        <>
+          <p style={{ marginBottom: "0px", float: "left" }}>
+            Chip Stimulus Bit Displays
+          </p>
+          <div style={{ float: "right" }}>
+            <ToggleButton
+              periodicEndpoint={props.periodicEndpoint}
+              path={props.path}
+            />
+          </div>
+        </>
+      }
+    >
+      <div
+        style={{
+          columnCount: "2",
+        }}
+      >
+        {clockDisplays}
+      </div>
+    </TitleCard>
+  );
 }

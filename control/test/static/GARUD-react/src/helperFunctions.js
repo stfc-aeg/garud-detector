@@ -12,7 +12,7 @@ export function getNested(paramTree, path) {
     }
     return current;
   } catch (err) {
-    console.log(err);
+    console.error(err);
     return {};
   }
 }

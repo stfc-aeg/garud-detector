@@ -7,7 +7,7 @@ function Navbar() {
         <img
           src="odin.png"
           height="30"
-          class="d-inline-block align-top"
+          className="d-inline-block align-top"
           alt="Odin Control Logo"
           style={{ marginLeft: "5px", marginRight: "10px" }}
         />

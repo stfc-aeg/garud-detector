@@ -402,27 +402,17 @@ function Sensor_Stimulus(props) {
 function Pulse_Generator(props) {
   return (
     <div className="odin-server">
-      <TitleCard title="Chip Stimulus Bit Displays">
-        <div
-          style={{
-            columnCount: "2",
-          }}
-        >
-          <ClockGraphs
-            periodicEndpoint={props.periodicEndpoint}
-            maxSignalRange={props.maxSignalRange}
-            path={props.path}
-          />
-        </div>
-      </TitleCard>
+      <ClockGraphs
+        periodicEndpoint={props.periodicEndpoint}
+        maxSignalRange={props.maxSignalRange}
+        path={props.path}
+      />
       <br />
-      <TitleCard title="Edit Chip Stimulus Bit Settings">
-        <EditableClockGraph
-          periodicEndpoint={props.periodicEndpoint}
-          maxSignalRange={props.maxSignalRange}
-          path={props.path}
-        />
-      </TitleCard>
+      <EditableClockGraph
+        periodicEndpoint={props.periodicEndpoint}
+        maxSignalRange={props.maxSignalRange}
+        path={props.path}
+      />
       <br />
     </div>
   );
@@ -443,86 +433,84 @@ export default function App() {
     1000
   );
 
-  const maxSignalRange = 4294967295;
-
   return (
     <>
       <Navbar />
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <Main
-              periodicEndpointPower={periodicEndpointPower}
-              periodicEndpoint={periodicEndpoint}
-            />
-          }
-        ></Route>
-        <Route
-          path="/gpio_direct"
-          element={<GPIO_Direct periodicEndpoint={periodicEndpoint} />}
-        ></Route>
-        <Route
-          path="/configuration"
-          element={<Configuration periodicEndpoint={periodicEndpoint} />}
-        ></Route>
-        <Route
-          path="/debug_register"
-          element={<Debug_Register periodicEndpoint={periodicEndpoint} />}
-        ></Route>
-        <Route
-          path="/sensor_stimulus"
-          element={<Sensor_Stimulus periodicEndpoint={periodicEndpoint} />}
-        ></Route>
-        <Route
-          path="/pulse_generator_1"
-          element={
-            <Pulse_Generator
-              periodicEndpoint={periodicEndpoint}
-              maxSignalRange={maxSignalRange}
-              path={[
-                "application",
-                "pulse_generators",
-                "pulse_generator_0",
-                "channels",
-              ]}
-            />
-          }
-        ></Route>
-        <Route
-          path="/pulse_generator_2"
-          element={
-            <Pulse_Generator
-              periodicEndpoint={periodicEndpoint}
-              maxSignalRange={maxSignalRange}
-              path={[
-                "application",
-                "pulse_generators",
-                "pulse_generator_1",
-                "channels",
-              ]}
-            />
-          }
-        ></Route>
-        <Route
-          path="/detector_json"
-          element={
-            <JSON_Display
-              title={"Detector JSON Data"}
-              periodicEndpoint={periodicEndpoint}
-            />
-          }
-        ></Route>
-        <Route
-          path="/power_supply_json"
-          element={
-            <JSON_Display
-              title={"Power Supply JSON Data"}
-              periodicEndpoint={periodicEndpointPower}
-            />
-          }
-        ></Route>
-      </Routes>
+      <div style={{ padding: "20px" }}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <Main
+                periodicEndpointPower={periodicEndpointPower}
+                periodicEndpoint={periodicEndpoint}
+              />
+            }
+          ></Route>
+          <Route
+            path="/gpio_direct"
+            element={<GPIO_Direct periodicEndpoint={periodicEndpoint} />}
+          ></Route>
+          <Route
+            path="/configuration"
+            element={<Configuration periodicEndpoint={periodicEndpoint} />}
+          ></Route>
+          <Route
+            path="/debug_register"
+            element={<Debug_Register periodicEndpoint={periodicEndpoint} />}
+          ></Route>
+          <Route
+            path="/sensor_stimulus"
+            element={<Sensor_Stimulus periodicEndpoint={periodicEndpoint} />}
+          ></Route>
+          <Route
+            path="/pulse_generator_1"
+            element={
+              <Pulse_Generator
+                periodicEndpoint={periodicEndpoint}
+                path={[
+                  "application",
+                  "pulse_generators",
+                  "pulse_generator_0",
+                  "channels",
+                ]}
+              />
+            }
+          ></Route>
+          <Route
+            path="/pulse_generator_2"
+            element={
+              <Pulse_Generator
+                periodicEndpoint={periodicEndpoint}
+                path={[
+                  "application",
+                  "pulse_generators",
+                  "pulse_generator_1",
+                  "channels",
+                ]}
+              />
+            }
+          ></Route>
+          <Route
+            path="/detector_json"
+            element={
+              <JSON_Display
+                title={"Detector JSON Data"}
+                periodicEndpoint={periodicEndpoint}
+              />
+            }
+          ></Route>
+          <Route
+            path="/power_supply_json"
+            element={
+              <JSON_Display
+                title={"Power Supply JSON Data"}
+                periodicEndpoint={periodicEndpointPower}
+              />
+            }
+          ></Route>
+        </Routes>
+      </div>
     </>
   );
   return (
