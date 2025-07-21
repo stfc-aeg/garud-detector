@@ -5,7 +5,7 @@ import { DropdownSelector, TitleCard } from "odin-react";
 import "odin-react/dist/index.css";
 import "./styles.css";
 import Dropdown from "react-bootstrap/Dropdown";
-import { format_string, getNested } from "./helperFunctions";
+import { getNested } from "./helperFunctions";
 import { Toggle } from "./Toggle";
 
 //A list used to store references to each toggle so that we can save the values of them all, or overwrite their values with a saved set.
@@ -42,10 +42,11 @@ export function Toggles(props) {
         ) {
           toggles.push(
             <Toggle
+              key={key}
               endpoint={props.periodicEndpoint}
               path={[...pathToIOPins, key]}
               accessor={"state"}
-              label={<>{format_string(String(key))}</>}
+              label={<>{String(key)}</>}
               number={true}
             />
           );
@@ -53,11 +54,12 @@ export function Toggles(props) {
         } else {
           toggles.push(
             <Toggle
+              key={key}
               endpoint={props.periodicEndpoint}
               path={[...pathToIOPins, key]}
               accessor={"state"}
               color="#FF8080"
-              label={<>{format_string(String(key))} &nbsp; (FW control)</>}
+              label={<>{String(key)} &nbsp; (FW control)</>}
               number={true}
             />
           );
@@ -66,10 +68,11 @@ export function Toggles(props) {
       } else {
         toggles.push(
           <Toggle
+            key={key}
             endpoint={props.periodicEndpoint}
             path={[...pathToIOPins, key]}
             accessor={"state"}
-            label={<>{format_string(String(key))}</>}
+            label={<>{String(key)}</>}
             number={true}
           />
         );
@@ -78,6 +81,7 @@ export function Toggles(props) {
     if (props.debugInputList.includes(key.toLowerCase()) && !props.isOutput) {
       toggles.push(
         <Toggle
+          key={key}
           endpoint={props.periodicEndpoint}
           path={pathToIOPins}
           accessor={key}

@@ -51,17 +51,6 @@ const debugInputList = [
 ];
 
 function ClockConfigSelect(props) {
-  const [clockGenSetting, setClockGenSetting] = useState("Loading");
-  if (
-    Object.keys(props.periodicEndpoint.data).length > 0 &&
-    clockGenSetting == "Loading"
-  ) {
-    setClockGenSetting(props.periodicEndpoint.data.clkgen.config_file);
-    if (!clockGenSetting) {
-      setClockGenSetting("None");
-    }
-  }
-
   function applySetting(event) {
     setClockGenSetting(event);
     var valueToSend = event;
@@ -79,6 +68,16 @@ function ClockConfigSelect(props) {
   }
 
   if (Object.keys(props.periodicEndpoint.data).length > 0) {
+    const [clockGenSetting, setClockGenSetting] = useState("Loading");
+    if (
+      Object.keys(props.periodicEndpoint.data).length > 0 &&
+      clockGenSetting == "Loading"
+    ) {
+      setClockGenSetting(props.periodicEndpoint.data.clkgen.config_file);
+      if (!clockGenSetting) {
+        setClockGenSetting("None");
+      }
+    }
     return (
       <TitleCard title="Clock Generator Settings">
         <p style={{ display: "inline-block" }}>Clock Generator Config File:</p>{" "}
@@ -104,7 +103,13 @@ function ClockConfigSelect(props) {
       </TitleCard>
     );
   } else {
-    return <></>;
+    return (
+      <TitleCard title="Clock Generator Settings">
+        <p style={{ color: "red" }}>
+          Error - no data received from garud detector adapter
+        </p>
+      </TitleCard>
+    );
   }
 }
 
@@ -120,6 +125,7 @@ function BitToggles(props) {
     ) {
       toggles.push(
         <Toggle
+          key={key}
           endpoint={props.periodicEndpoint}
           path={[...path, key]}
           accessor={"mux_source_fw"}
@@ -361,9 +367,23 @@ function Debug_Register(props) {
         </>
       ) : (
         <>
-          <p style={{ color: "red" }}>
-            Error - no data received from garud detector adapter
-          </p>
+          <TitleCard title="Menu">
+            <p style={{ color: "red" }}>
+              Error - no data received from garud detector adapter
+            </p>
+          </TitleCard>
+          <br />
+          <TitleCard title="Debug Register Input">
+            <p style={{ color: "red" }}>
+              Error - no data received from garud detector adapter
+            </p>
+          </TitleCard>
+          <br />
+          <TitleCard title="Debug Register Output">
+            <p style={{ color: "red" }}>
+              Error - no data received from garud detector adapter
+            </p>
+          </TitleCard>
         </>
       )}
     </div>
@@ -386,11 +406,9 @@ function Sensor_Stimulus(props) {
                 debugInputList={debugInputList}
               />
             ) : (
-              <>
-                <p style={{ color: "red" }}>
-                  Error - no data received from garud detector adapter
-                </p>
-              </>
+              <p style={{ color: "red" }}>
+                Error - no data received from garud detector adapter
+              </p>
             )}
           </div>
         </TitleCard>
@@ -400,22 +418,59 @@ function Sensor_Stimulus(props) {
 }
 
 function Pulse_Generator(props) {
+  const [index, setIndex] = useState(0);
   return (
     <div className="odin-server">
       <ClockGraphs
         periodicEndpoint={props.periodicEndpoint}
         maxSignalRange={props.maxSignalRange}
         path={props.path}
+        setIndex={setIndex}
       />
       <br />
       <EditableClockGraph
+        number={props.number}
         periodicEndpoint={props.periodicEndpoint}
         maxSignalRange={props.maxSignalRange}
         path={props.path}
+        index={index}
+        setIndex={setIndex}
       />
       <br />
     </div>
   );
+}
+
+function getPulseGeneratorRoutes(periodicEndpoint) {
+  if (Object.keys(periodicEndpoint.data).length > 0) {
+    var routes = [];
+    for (
+      let i = 0;
+      i <
+      Object.keys(periodicEndpoint.data.application.pulse_generators).length;
+      i++
+    ) {
+      routes.push(
+        <Route
+          key={i}
+          path={"/pulse_generator_" + String(i)}
+          element={
+            <Pulse_Generator
+              number={i}
+              periodicEndpoint={periodicEndpoint}
+              path={[
+                "application",
+                "pulse_generators",
+                "pulse_generator_" + String(i),
+                "channels",
+              ]}
+            />
+          }
+        ></Route>
+      );
+    }
+    return routes;
+  }
 }
 
 export default function App() {
@@ -435,7 +490,7 @@ export default function App() {
 
   return (
     <>
-      <Navbar />
+      <Navbar periodicEndpoint={periodicEndpoint} />
       <div style={{ padding: "20px" }}>
         <Routes>
           <Route
@@ -463,34 +518,7 @@ export default function App() {
             path="/sensor_stimulus"
             element={<Sensor_Stimulus periodicEndpoint={periodicEndpoint} />}
           ></Route>
-          <Route
-            path="/pulse_generator_1"
-            element={
-              <Pulse_Generator
-                periodicEndpoint={periodicEndpoint}
-                path={[
-                  "application",
-                  "pulse_generators",
-                  "pulse_generator_0",
-                  "channels",
-                ]}
-              />
-            }
-          ></Route>
-          <Route
-            path="/pulse_generator_2"
-            element={
-              <Pulse_Generator
-                periodicEndpoint={periodicEndpoint}
-                path={[
-                  "application",
-                  "pulse_generators",
-                  "pulse_generator_1",
-                  "channels",
-                ]}
-              />
-            }
-          ></Route>
+          {getPulseGeneratorRoutes(periodicEndpoint)}
           <Route
             path="/detector_json"
             element={
@@ -512,77 +540,5 @@ export default function App() {
         </Routes>
       </div>
     </>
-  );
-  return (
-    <OdinApp
-      title="GARUD"
-      navLinks={[
-        "Main",
-        "GPIO Direct",
-        "Configuration",
-        "Debug Register Test",
-        "FW/SW Sensor Stimulus",
-        "Pulse Generator 1",
-        "Pulse Generator 2",
-        "Detector JSON",
-        "Power Supply JSON",
-      ]}
-      icon_src="odin.png"
-    >
-      <Container>
-        <Main
-          periodicEndpointPower={periodicEndpointPower}
-          periodicEndpoint={periodicEndpoint}
-        />
-      </Container>
-      <Container>
-        <GPIO_Direct periodicEndpoint={periodicEndpoint} />
-      </Container>
-      <Container>
-        <Configuration periodicEndpoint={periodicEndpoint} />
-      </Container>
-      <Container>
-        <Debug_Register periodicEndpoint={periodicEndpoint} />
-      </Container>
-      <Container>
-        <Sensor_Stimulus periodicEndpoint={periodicEndpoint} />
-      </Container>
-      <Container>
-        <Pulse_Generator
-          periodicEndpoint={periodicEndpoint}
-          maxSignalRange={maxSignalRange}
-          path={[
-            "application",
-            "pulse_generators",
-            "pulse_generator_0",
-            "channels",
-          ]}
-        />
-      </Container>
-      <Container>
-        <Pulse_Generator
-          periodicEndpoint={periodicEndpoint}
-          maxSignalRange={maxSignalRange}
-          path={[
-            "application",
-            "pulse_generators",
-            "pulse_generator_1",
-            "channels",
-          ]}
-        />
-      </Container>
-      <Container>
-        <JSON_Display
-          title={"Detector JSON Data"}
-          periodicEndpoint={periodicEndpoint}
-        />
-      </Container>
-      <Container>
-        <JSON_Display
-          title={"Power Supply JSON Data"}
-          periodicEndpoint={periodicEndpointPower}
-        />
-      </Container>
-    </OdinApp>
   );
 }

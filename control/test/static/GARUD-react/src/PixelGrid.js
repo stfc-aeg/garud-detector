@@ -36,6 +36,7 @@ export default function PixelGrid(props) {
       }
       html.push(
         <span
+          key={i}
           style={{
             borderColor: colour,
             borderWidth: "2px",
@@ -104,6 +105,7 @@ export default function PixelGrid(props) {
         // />
 
         <div
+          key={col}
           style={{
             width:
               String(

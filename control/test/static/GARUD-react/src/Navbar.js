@@ -1,6 +1,25 @@
 import { Link } from "react-router-dom";
 
-function Navbar() {
+function PulseGeneratorLinks(periodicEndpoint) {
+  if (Object.keys(periodicEndpoint.data).length > 0) {
+    var links = [];
+    for (
+      let i = 0;
+      i <
+      Object.keys(periodicEndpoint.data.application.pulse_generators).length;
+      i++
+    ) {
+      links.push(
+        <Link key={i} to={"/pulse_generator_" + String(i)}>
+          Pulse Generator {String(i)}
+        </Link>
+      );
+    }
+    return links;
+  }
+}
+
+function Navbar(props) {
   return (
     <>
       <nav className="navbar">
@@ -17,8 +36,9 @@ function Navbar() {
         <Link to="/configuration">Configuration</Link>
         <Link to="/debug_register">Debug Register Test</Link>
         <Link to="/sensor_stimulus">FW/SW Sensor Stimulus</Link>
-        <Link to="/pulse_generator_1">Pulse Generator 1</Link>
-        <Link to="/pulse_generator_2">Pulse Generator 2</Link>
+        {/* <Link to="/pulse_generator_1">Pulse Generator 1</Link>
+        <Link to="/pulse_generator_2">Pulse Generator 2</Link> */}
+        {PulseGeneratorLinks(props.periodicEndpoint)}
         <Link to="/detector_json">Detector JSON</Link>
         <Link to="/power_supply_json">Power Supply JSON</Link>
       </nav>

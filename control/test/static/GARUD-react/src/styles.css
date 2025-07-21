@@ -37,10 +37,20 @@
 
 .BitLengthInput {
   width: calc(100% - 270px);
+  max-width: 150px;
+  border-color: #dee2e6;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 5px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
 .BitDepthInput {
   width: calc(100% - 280px);
+}
+
+.calculate120 {
+  width: calc(100% - 120px);
 }
 
 .wrap-and-compress {
@@ -176,4 +186,41 @@ input[type="number"] {
 
 .navbar a:hover {
   color: grey;
+}
+
+.mytooltip {
+  position: relative;
+  display: inline-block;
+  padding: 5px 0;
+}
+
+.mytooltip .mytooltiptext {
+  visibility: hidden;
+  opacity: 0;
+  padding: 5px 5px;
+  background-color: #bbb;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -60px;
+}
+
+.mytooltip .mytooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #bbb transparent transparent transparent;
+}
+
+.mytooltip:hover .mytooltiptext {
+  visibility: visible;
+  opacity: 1;
 }

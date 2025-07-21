@@ -275,32 +275,31 @@ export function DACReadouts(props) {
     });
 
     DACs.push(
-      <>
-        <div
-          style={{
-            display: "inline-block",
-            minWidth: "300px",
-            width: "32%",
-            marginRight: "0.5%",
-            marginLeft: "0.5%",
-            borderWidth: "1px",
-            borderColor: "#dee2e6",
-            borderRadius: "5px",
-            backgroundColor: "#f8f9fa",
-            marginBottom: "5px",
-            borderStyle: "solid",
-            padding: "5px",
-          }}
-        >
-          <DAC
-            ref={DACRefs[DACRefs.length - 1].ref}
-            endpoint={props.periodicEndpoint}
-            accessor={key}
-            pathToDACs={pathToDACs}
-            default={DACDefaults[key.toUpperCase()]}
-          />
-        </div>
-      </>
+      <div
+        key={key}
+        style={{
+          display: "inline-block",
+          minWidth: "300px",
+          width: "32%",
+          marginRight: "0.5%",
+          marginLeft: "0.5%",
+          borderWidth: "1px",
+          borderColor: "#dee2e6",
+          borderRadius: "5px",
+          backgroundColor: "#f8f9fa",
+          marginBottom: "5px",
+          borderStyle: "solid",
+          padding: "5px",
+        }}
+      >
+        <DAC
+          ref={DACRefs[DACRefs.length - 1].ref}
+          endpoint={props.periodicEndpoint}
+          accessor={key}
+          pathToDACs={pathToDACs}
+          default={DACDefaults[key.toUpperCase()]}
+        />
+      </div>
     );
   }
   return DACs;
@@ -426,31 +425,30 @@ export function ConfigDisplay(props) {
       ref: createRef(),
     });
     configs.push(
-      <>
-        <div
-          style={{
-            display: "inline-block",
-            minWidth: "300px",
-            width: "32%",
-            marginRight: "0.5%",
-            marginLeft: "0.5%",
-            borderWidth: "1px",
-            borderColor: "#dee2e6",
-            borderRadius: "5px",
-            backgroundColor: "#f8f9fa",
-            marginBottom: "5px",
-            borderStyle: "solid",
-            padding: "5px",
-          }}
-        >
-          <Config
-            ref={SRConfigs[SRConfigs.length - 1].ref}
-            endpoint={props.periodicEndpoint}
-            accessor={key}
-            pathToConfigs={pathToConfigs}
-          />
-        </div>
-      </>
+      <div
+        key={key}
+        style={{
+          display: "inline-block",
+          minWidth: "300px",
+          width: "32%",
+          marginRight: "0.5%",
+          marginLeft: "0.5%",
+          borderWidth: "1px",
+          borderColor: "#dee2e6",
+          borderRadius: "5px",
+          backgroundColor: "#f8f9fa",
+          marginBottom: "5px",
+          borderStyle: "solid",
+          padding: "5px",
+        }}
+      >
+        <Config
+          ref={SRConfigs[SRConfigs.length - 1].ref}
+          endpoint={props.periodicEndpoint}
+          accessor={key}
+          pathToConfigs={pathToConfigs}
+        />
+      </div>
     );
   }
   return configs;
@@ -652,31 +650,30 @@ export function ReadoutConfigDisplay(props) {
       ref: createRef(),
     });
     configs.push(
-      <>
-        <div
-          style={{
-            display: "inline-block",
-            minWidth: "300px",
-            width: "24%",
-            marginRight: "0.5%",
-            marginLeft: "0.5%",
-            borderWidth: "1px",
-            borderColor: "#dee2e6",
-            borderRadius: "5px",
-            backgroundColor: "#f8f9fa",
-            marginBottom: "5px",
-            borderStyle: "solid",
-            padding: "5px",
-          }}
-        >
-          <ReadoutConfig
-            ref={readoutConfigs[readoutConfigs.length - 1].ref}
-            endpoint={props.periodicEndpoint}
-            accessor={key}
-            pathToConfigs={pathToConfigs}
-          />
-        </div>
-      </>
+      <div
+        key={key}
+        style={{
+          display: "inline-block",
+          minWidth: "300px",
+          width: "24%",
+          marginRight: "0.5%",
+          marginLeft: "0.5%",
+          borderWidth: "1px",
+          borderColor: "#dee2e6",
+          borderRadius: "5px",
+          backgroundColor: "#f8f9fa",
+          marginBottom: "5px",
+          borderStyle: "solid",
+          padding: "5px",
+        }}
+      >
+        <ReadoutConfig
+          ref={readoutConfigs[readoutConfigs.length - 1].ref}
+          endpoint={props.periodicEndpoint}
+          accessor={key}
+          pathToConfigs={pathToConfigs}
+        />
+      </div>
     );
   }
   return configs;
@@ -687,6 +684,7 @@ export function ReadoutConfigDisplay(props) {
  * @param {adapterEndpoint} periodicEndpoint - the endpoint to use to update the DAC values
  */
 export function ResetDACs(periodicEndpoint) {
+  console.log("Hello");
   for (let dac of DACRefs) {
     if (dac.ref.current != null) {
       //if the toggle is checked, this DAC is in binary mode
@@ -708,7 +706,10 @@ export function ResetDACs(periodicEndpoint) {
       else {
         dac.ref.current.input.value = parseInt(Number(dac.default), 2);
         periodicEndpoint
-          .put({ [dac.key]: dac.ref.current.input.value }, dac.path.join("/"))
+          .put(
+            { [dac.key]: Number(dac.ref.current.input.value) },
+            dac.path.join("/")
+          )
           .then((response) => {
             periodicEndpoint.mergeData(response, dac.path.join("/"));
           })

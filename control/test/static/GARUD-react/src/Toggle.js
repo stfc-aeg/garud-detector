@@ -3,7 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { useState, useEffect, forwardRef } from "react";
 import InputGroup from "react-bootstrap/InputGroup";
 import Switch from "react-switch";
-import { format_string, getNested } from "./helperFunctions";
+import { getNested } from "./helperFunctions";
 
 //Ashley's code for a toggleswitch (see odin-react repository on github), slightly edited,
 //so that the label floats to the left and the toggle floats to the right as opposed to both floating to the left
@@ -95,8 +95,7 @@ export var Toggle = React.forwardRef((props, ref) => {
       });
   }
 
-  //format the label, adding capital letters and replacing underscores with spaces
-  var label = format_string(String(props.accessor));
+  var label = String(props.accessor);
   if (props.label != undefined) {
     label = props.label;
   }

@@ -43,6 +43,7 @@ function PowerSupplyReadout(props) {
   )) {
     power_supply.push(
       <div
+        key={channel}
         style={{
           display: "flex",
           flexDirection: "row",
@@ -153,6 +154,7 @@ function PowerSuppliesDisplay(props) {
   )) {
     power_supplies.push(
       <div
+        key={supply}
         style={{
           width: "48%",
           display: "inline-block",
@@ -217,7 +219,8 @@ export default function PowerDisplay(props) {
           }
         >
           <p style={{ color: "red" }}>
-            Error: {props.periodicEndpointPower.data.status.ttipsu.error}
+            Power Supply Error:{" "}
+            {props.periodicEndpointPower.data.status.ttipsu.error}
           </p>
         </TitleCard>
       );
