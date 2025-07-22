@@ -1,6 +1,6 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "odin-react/dist/index.css";
+//import "odin-react/dist/index.css";
 import "./styles.css";
 import Plot from "react-plotly.js";
 
@@ -86,7 +86,7 @@ export function TriggerReadButton(props) {
     props.endpoint
       .put({ [props.key]: true }, "application/debugreg")
       .then((response) => {
-        endpoint.mergeData(response, "application/debugreg");
+        props.endpoint.mergeData(response, "application/debugreg");
       })
       .catch((err) => {
         console.error(err);

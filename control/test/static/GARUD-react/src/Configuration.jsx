@@ -8,7 +8,7 @@ import {
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { WithEndpoint } from "odin-react";
-import "odin-react/dist/index.css";
+//import "odin-react/dist/index.css";
 import "./styles.css";
 import InputGroup from "react-bootstrap/InputGroup";
 import Button from "react-bootstrap/Button";
@@ -219,10 +219,17 @@ const DAC = React.forwardRef((props, ref) => {
       }
     }
   }
-
+  var color = "#f8f8f8";
+  const htmlElement = document.querySelector("html");
+  if (htmlElement?.getAttribute("data-bs-theme") == "dark") {
+    color = "#2b3035";
+  }
   return (
     <>
-      <div className="box" style={{ padding: "5px" }}>
+      <div
+        className="box"
+        style={{ padding: "5px", backgroundColor: color, borderColor: color }}
+      >
         <p style={{ marginBottom: "0px", float: "left" }}>
           {format_string(props.accessor) + ":"}
         </p>
@@ -273,6 +280,13 @@ export function DACReadouts(props) {
       default: DACDefaults[key.toUpperCase()],
       ref: createRef(),
     });
+    var color = "#f8f8f8";
+    var borderColor = "#dee2e6";
+    const htmlElement = document.querySelector("html");
+    if (htmlElement?.getAttribute("data-bs-theme") == "dark") {
+      color = "#2b3035";
+      borderColor = "#495057";
+    }
 
     DACs.push(
       <div
@@ -284,9 +298,9 @@ export function DACReadouts(props) {
           marginRight: "0.5%",
           marginLeft: "0.5%",
           borderWidth: "1px",
-          borderColor: "#dee2e6",
+          borderColor: borderColor,
           borderRadius: "5px",
-          backgroundColor: "#f8f9fa",
+          backgroundColor: color,
           marginBottom: "5px",
           borderStyle: "solid",
           padding: "5px",
@@ -424,6 +438,13 @@ export function ConfigDisplay(props) {
       key: key,
       ref: createRef(),
     });
+    var color = "#f8f8f8";
+    var borderColor = "#dee2e6";
+    const htmlElement = document.querySelector("html");
+    if (htmlElement?.getAttribute("data-bs-theme") == "dark") {
+      color = "#2b3035";
+      borderColor = "#495057";
+    }
     configs.push(
       <div
         key={key}
@@ -434,9 +455,9 @@ export function ConfigDisplay(props) {
           marginRight: "0.5%",
           marginLeft: "0.5%",
           borderWidth: "1px",
-          borderColor: "#dee2e6",
+          borderColor: borderColor,
           borderRadius: "5px",
-          backgroundColor: "#f8f9fa",
+          backgroundColor: color,
           marginBottom: "5px",
           borderStyle: "solid",
           padding: "5px",
@@ -649,6 +670,13 @@ export function ReadoutConfigDisplay(props) {
       key: key,
       ref: createRef(),
     });
+    var color = "#f8f8f8";
+    var borderColor = "#dee2e6";
+    const htmlElement = document.querySelector("html");
+    if (htmlElement?.getAttribute("data-bs-theme") == "dark") {
+      color = "#2b3035";
+      borderColor = "#495057";
+    }
     configs.push(
       <div
         key={key}
@@ -659,9 +687,9 @@ export function ReadoutConfigDisplay(props) {
           marginRight: "0.5%",
           marginLeft: "0.5%",
           borderWidth: "1px",
-          borderColor: "#dee2e6",
+          borderColor: borderColor,
           borderRadius: "5px",
-          backgroundColor: "#f8f9fa",
+          backgroundColor: color,
           marginBottom: "5px",
           borderStyle: "solid",
           padding: "5px",
@@ -684,7 +712,6 @@ export function ReadoutConfigDisplay(props) {
  * @param {adapterEndpoint} periodicEndpoint - the endpoint to use to update the DAC values
  */
 export function ResetDACs(periodicEndpoint) {
-  console.log("Hello");
   for (let dac of DACRefs) {
     if (dac.ref.current != null) {
       //if the toggle is checked, this DAC is in binary mode
@@ -811,29 +838,26 @@ export function ApplyResetConfigButtons(props) {
         )} */}
         {Object.keys(props.periodicEndpoint.data).length > 0 &&
         !props.periodicEndpoint.data.application[props.type].SYNC ? (
-          <EndpointButton
-            style={{ float: "right", marginRight: "5px" }}
-            endpoint={props.periodicEndpoint}
-            event_type="click"
-            fullpath={"application/" + props.type + "/SYNC"}
-            value={true}
-          >
-            Apply
-          </EndpointButton>
+          <div style={{ float: "right", marginRight: "5px" }}>
+            <EndpointButton
+              endpoint={props.periodicEndpoint}
+              event_type="click"
+              fullpath={"application/" + props.type + "/SYNC"}
+              value={true}
+            >
+              Apply
+            </EndpointButton>
+          </div>
         ) : (
-          <EndpointButton
-            style={{
-              float: "right",
-              marginRight: "5px",
-              backgroundColor: "grey",
-              borderColor: "grey",
-            }}
-            fullpath={"application/" + props.type + "/SYNC"}
-            endpoint={props.periodicEndpoint}
-            disabled
-          >
-            Apply
-          </EndpointButton>
+          <div style={{ float: "right", marginRight: "5px" }}>
+            <EndpointButton
+              fullpath={"application/" + props.type + "/SYNC"}
+              endpoint={props.periodicEndpoint}
+              disabled={true}
+            >
+              Apply
+            </EndpointButton>
+          </div>
         )}
       </>
     );

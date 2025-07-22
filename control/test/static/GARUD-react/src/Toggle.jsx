@@ -24,6 +24,10 @@ export var ToggleSwitch = forwardRef((props, ref) => {
   var color;
   if (props.color == undefined) {
     color = "#f8f8f8";
+    const htmlElement = document.querySelector("html");
+    if (htmlElement?.getAttribute("data-bs-theme") == "dark") {
+      color = "#2b3035";
+    }
   } else {
     color = props.color;
   }

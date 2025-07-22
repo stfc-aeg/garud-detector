@@ -1,8 +1,7 @@
-import React from "react";
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { TitleCard } from "odin-react";
-import "odin-react/dist/index.css";
+//import "odin-react/dist/index.css";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 
 export default function PixelGrid(props) {

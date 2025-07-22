@@ -1,16 +1,10 @@
-import { useState } from "react";
-import React from "react";
+import { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import {
-  OdinApp,
-  useAdapterEndpoint,
-  DropdownSelector,
-  TitleCard,
-} from "odin-react";
-import "odin-react/dist/index.css";
+import { OdinApp, useAdapterEndpoint, TitleCard } from "odin-react";
+//import "odin-react/dist/index.css";
 import "./styles.css";
 import Container from "react-bootstrap/Container";
-import Dropdown from "react-bootstrap/Dropdown";
+import { DropdownButton, Dropdown } from "react-bootstrap";
 import PixelGrid from "./PixelGrid";
 import PowerDisplay from "./PowerSupplies";
 import { getNested, format_json } from "./helperFunctions";
@@ -33,8 +27,6 @@ import {
 } from "./Configuration";
 import { Toggles, SaveLoadBar } from "./GPIODirect";
 import { Toggle } from "./Toggle";
-import Navbar from "./Navbar";
-import { Routes, Route } from "react-router-dom";
 
 //List of which toggles are inputs
 const debugInputList = [
@@ -51,6 +43,7 @@ const debugInputList = [
 ];
 
 function ClockConfigSelect(props) {
+  const [clockGenSetting, setClockGenSetting] = useState("Loading");
   function applySetting(event) {
     setClockGenSetting(event);
     var valueToSend = event;
@@ -68,7 +61,6 @@ function ClockConfigSelect(props) {
   }
 
   if (Object.keys(props.periodicEndpoint.data).length > 0) {
-    const [clockGenSetting, setClockGenSetting] = useState("Loading");
     if (
       Object.keys(props.periodicEndpoint.data).length > 0 &&
       clockGenSetting == "Loading"
@@ -83,8 +75,8 @@ function ClockConfigSelect(props) {
         <p style={{ display: "inline-block" }}>Clock Generator Config File:</p>{" "}
         &nbsp;
         <div style={{ display: "inline-block" }}>
-          <DropdownSelector
-            buttonText={clockGenSetting || "None"}
+          <DropdownButton
+            title={clockGenSetting || "None"}
             onSelect={applySetting}
           >
             {props.periodicEndpoint.data.clkgen.config_files_avail.map(
@@ -98,7 +90,7 @@ function ClockConfigSelect(props) {
                 </Dropdown.Item>
               )
             )}
-          </DropdownSelector>
+          </DropdownButton>
         </div>
       </TitleCard>
     );
@@ -441,104 +433,114 @@ function Pulse_Generator(props) {
   );
 }
 
-function getPulseGeneratorRoutes(periodicEndpoint) {
+function getPulseGeneratorPages(periodicEndpoint) {
   if (Object.keys(periodicEndpoint.data).length > 0) {
-    var routes = [];
+    var pages = [];
     for (
       let i = 0;
       i <
       Object.keys(periodicEndpoint.data.application.pulse_generators).length;
       i++
     ) {
-      routes.push(
-        <Route
-          key={i}
-          path={"/pulse_generator_" + String(i)}
-          element={
-            <Pulse_Generator
-              number={i}
-              periodicEndpoint={periodicEndpoint}
-              path={[
-                "application",
-                "pulse_generators",
-                "pulse_generator_" + String(i),
-                "channels",
-              ]}
-            />
-          }
-        ></Route>
+      pages.push(
+        <Container key={i}>
+          <Pulse_Generator
+            number={i}
+            periodicEndpoint={periodicEndpoint}
+            path={[
+              "application",
+              "pulse_generators",
+              "pulse_generator_" + String(i),
+              "channels",
+            ]}
+          />
+        </Container>
       );
     }
-    return routes;
+    return pages;
+  } else {
+    return <></>;
+  }
+}
+
+function getPulseGeneratorPageNames(periodicEndpoint) {
+  if (Object.keys(periodicEndpoint.data).length > 0) {
+    var pageNames = [];
+    for (
+      let i = 0;
+      i <
+      Object.keys(periodicEndpoint.data.application.pulse_generators).length;
+      i++
+    ) {
+      pageNames.push("pulse_generator_" + String(i));
+    }
+    return pageNames;
+  } else {
+    return [];
   }
 }
 
 export default function App() {
   //create the endpoint to use to contact the adapter, at the address specified in the .env file,
   //polling it to get the most recent parameter tree every 500 milliseconds
-
   const periodicEndpoint = useAdapterEndpoint(
     "detector",
-    process.env.REACT_APP_ENDPOINT_URL,
+    "http://192.168.0.191:8888",
     1000
   );
   const periodicEndpointPower = useAdapterEndpoint(
     "proxy",
-    process.env.REACT_APP_ENDPOINT_URL,
+    "http://192.168.0.191:8888",
     1000
   );
 
   return (
     <>
-      <Navbar periodicEndpoint={periodicEndpoint} />
-      <div style={{ padding: "20px" }}>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <Main
-                periodicEndpointPower={periodicEndpointPower}
-                periodicEndpoint={periodicEndpoint}
-              />
-            }
-          ></Route>
-          <Route
-            path="/gpio_direct"
-            element={<GPIO_Direct periodicEndpoint={periodicEndpoint} />}
-          ></Route>
-          <Route
-            path="/configuration"
-            element={<Configuration periodicEndpoint={periodicEndpoint} />}
-          ></Route>
-          <Route
-            path="/debug_register"
-            element={<Debug_Register periodicEndpoint={periodicEndpoint} />}
-          ></Route>
-          <Route
-            path="/sensor_stimulus"
-            element={<Sensor_Stimulus periodicEndpoint={periodicEndpoint} />}
-          ></Route>
-          {getPulseGeneratorRoutes(periodicEndpoint)}
-          <Route
-            path="/detector_json"
-            element={
-              <JSON_Display
-                title={"Detector JSON Data"}
-                periodicEndpoint={periodicEndpoint}
-              />
-            }
-          ></Route>
-          <Route
-            path="/power_supply_json"
-            element={
-              <JSON_Display
-                title={"Power Supply JSON Data"}
-                periodicEndpoint={periodicEndpointPower}
-              />
-            }
-          ></Route>
-        </Routes>
-      </div>
+      <OdinApp
+        title="GARUD"
+        navLinks={[
+          "Main",
+          "GPIO Direct",
+          "Config",
+          "Debug Register",
+          "Sensor Stimulus",
+          { "Pulse Generators": getPulseGeneratorPageNames(periodicEndpoint) },
+          "Detector JSON",
+          "Power Supply JSON",
+        ]}
+      >
+        <Container>
+          <Main
+            periodicEndpointPower={periodicEndpointPower}
+            periodicEndpoint={periodicEndpoint}
+          />
+        </Container>
+        <Container>
+          <GPIO_Direct periodicEndpoint={periodicEndpoint} />
+        </Container>
+        <Container>
+          <Configuration periodicEndpoint={periodicEndpoint} />
+        </Container>
+        <Container>
+          <Debug_Register periodicEndpoint={periodicEndpoint} />
+        </Container>
+        <Container>
+          <Sensor_Stimulus periodicEndpoint={periodicEndpoint} />
+        </Container>
+        {getPulseGeneratorPages(periodicEndpoint)}
+        <Container>
+          <JSON_Display
+            title={"Detector JSON Data"}
+            periodicEndpoint={periodicEndpoint}
+          />
+        </Container>
+        <Container>
+          <JSON_Display
+            title={"Power Supply JSON Data"}
+            periodicEndpoint={periodicEndpointPower}
+          />
+        </Container>
+      </OdinApp>
     </>
   );
 }

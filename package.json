@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "eslint": "^9.26.0",
-    "npm": "^11.4.1"
+    "odin-react": "github:stfc-aeg/odin-react",
+    "vite": "^7.0.5"
   }
 }

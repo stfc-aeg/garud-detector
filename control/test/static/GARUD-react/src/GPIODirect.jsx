@@ -1,10 +1,11 @@
 import { useState, createRef } from "react";
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { DropdownSelector, TitleCard } from "odin-react";
-import "odin-react/dist/index.css";
+import { TitleCard } from "odin-react";
+import { DropdownButton, Dropdown } from "react-bootstrap";
+//import "odin-react/dist/index.css";
 import "./styles.css";
-import Dropdown from "react-bootstrap/Dropdown";
+//import Dropdown from "react-bootstrap/Dropdown";
 import { getNested } from "./helperFunctions";
 import { Toggle } from "./Toggle";
 
@@ -131,8 +132,8 @@ export function SaveLoadBar(props) {
       </div>
       <div style={{ display: "inline-block" }}>
         <TitleCard title="Load">
-          <DropdownSelector
-            buttonText={loadInput || "None"}
+          <DropdownButton
+            title={loadInput || "None"}
             onSelect={(event) => setLoadInput(event)}
           >
             {Object.keys(configs).map((selection, index) => (
@@ -144,7 +145,7 @@ export function SaveLoadBar(props) {
                 {selection}
               </Dropdown.Item>
             ))}
-          </DropdownSelector>{" "}
+          </DropdownButton>{" "}
           &nbsp;
           <input
             onClick={() => loadConfig(loadInput, props.endpoint)}

@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
-import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Plot from "react-plotly.js";
-import { DropdownSelector, TitleCard } from "odin-react";
-import Dropdown from "react-bootstrap/Dropdown";
+import { TitleCard } from "odin-react";
+//import { DropdownButton, Dropdown } from "react-bootstrap/Dropdown";
+import { DropdownButton, Dropdown } from "react-bootstrap";
 import { getNested } from "./helperFunctions";
 
 function ToggleButton(props) {
@@ -31,12 +31,10 @@ function ToggleButton(props) {
   var color = "#80F080";
   var text = "Start";
   if (
-    Boolean(
-      getNested(
-        props.periodicEndpoint.data,
-        props.path.slice(0, props.path.length - 1)
-      )["enable"]
-    )
+    getNested(
+      props.periodicEndpoint.data,
+      props.path.slice(0, props.path.length - 1)
+    )["enable"]
   ) {
     color = "#FF8080";
     text = "Reset";
@@ -324,7 +322,7 @@ export function EditableClockGraph(props) {
         index) &
       1;
     var y = [preset == 0 ? 0.001 : 0.999];
-    var low = !Boolean(preset);
+    var low = !preset;
     var x = [0];
     for (let i = 0; i < xValues.length; i++) {
       x.push(xValues[i]);
@@ -585,8 +583,8 @@ export function EditableClockGraph(props) {
     >
       <div style={{ marginBottom: "5px" }}>
         <div style={{ display: "inline-block" }}>
-          <DropdownSelector
-            buttonText={
+          <DropdownButton
+            title={
               "Clock Stimulus Bit: " +
                 getNested(periodicEndpoint.data, props.path)[String(index)][
                   "endpoint"
@@ -609,7 +607,7 @@ export function EditableClockGraph(props) {
                 </Dropdown.Item>
               )
             )}
-          </DropdownSelector>
+          </DropdownButton>
         </div>
         &nbsp;
         <div style={{ display: "inline-block", marginBottom: "1%" }}>
@@ -829,7 +827,7 @@ function ReadonlyClockGraph(props) {
         index) &
       1;
     var y = [preset == 0 ? 0.001 : 0.999];
-    var low = !Boolean(preset);
+    var low = !preset;
     for (let i = 0; i < xValues.length; i++) {
       x.push(xValues[i]);
       x.push(xValues[i]);
@@ -883,10 +881,7 @@ function ReadonlyClockGraph(props) {
         width: "100%",
       }}
     >
-      <div
-        style={{ width: "120px" }}
-        onClick={(event) => props.setIndex(index)}
-      >
+      <div style={{ width: "120px" }} onClick={() => props.setIndex(index)}>
         <div className="mytooltip">
           {getNested(periodicEndpoint.data, props.path)[String(index)][
             "endpoint"
