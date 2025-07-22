@@ -853,7 +853,8 @@ export function ApplyResetConfigButtons(props) {
             <EndpointButton
               fullpath={"application/" + props.type + "/SYNC"}
               endpoint={props.periodicEndpoint}
-              disabled={true}
+              event_type="click"
+              //disabled={true}
             >
               Apply
             </EndpointButton>
