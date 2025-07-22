@@ -2,7 +2,6 @@ import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { TitleCard } from "odin-react";
 //import "odin-react/dist/index.css";
-import { CopyToClipboard } from "react-copy-to-clipboard";
 
 export default function PixelGrid(props) {
   //create a value to store when the mouse is pressed down, and update it whenever the mouse is pressed down or lifted up
@@ -184,19 +183,19 @@ export default function PixelGrid(props) {
         console.error(err);
       });
   }
+
   return (
     <TitleCard
       title={
         <>
           <p style={{ float: "left" }}>{props.title}</p>
-          <CopyToClipboard text={get_text()}>
-            <input
-              style={{ float: "right", marginRight: "5px" }}
-              className="nice-button"
-              type="button"
-              value="Get"
-            />
-          </CopyToClipboard>
+          <input
+            style={{ float: "right", marginRight: "5px" }}
+            onClick={() => navigator.clipboard.writeText(get_text())}
+            className="nice-button"
+            type="button"
+            value="Get"
+          />
           <input
             style={{ float: "right", marginRight: "5px" }}
             onClick={Send}
