@@ -1,3 +1,5 @@
+import { TitleCard } from "odin-react";
+
 /**
  * get the section of the parameter tree at the end of "path"
  * @param  {JSON} paramTree the parameter tree
@@ -8,7 +10,7 @@ export function getNested(paramTree, path) {
   try {
     var current = paramTree;
     for (let pathSection of path) {
-      var current = current[pathSection];
+      current = current[pathSection];
     }
     return current;
   } catch (err) {
@@ -77,4 +79,22 @@ export function format_json(json_string, num_spaces) {
     "<span class='null'>null</span>"
   );
   return json_formatted;
+}
+
+export function JSON_Display(props) {
+  return (
+    <div className="odin-server">
+      <TitleCard title={props.title}>
+        <pre
+          dangerouslySetInnerHTML={{
+            __html: format_json(
+              JSON.stringify(props.periodicEndpoint.data, null, "    "),
+              1
+            ),
+          }}
+        ></pre>
+      </TitleCard>
+      <br />
+    </div>
+  );
 }

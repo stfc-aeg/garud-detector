@@ -2,7 +2,7 @@ import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { TitleCard } from "odin-react";
 import { ToggleSwitch } from "./Toggle";
-import { format_string } from "./helperFunctions";
+import { format_string } from "./HelperFunctions";
 import InputGroup from "react-bootstrap/InputGroup";
 
 // calculate the power of each power supply, remove any negatives and sum them together, before rounding the power to four decimal places

@@ -1,10 +1,4 @@
-import {
-  useState,
-  useEffect,
-  createRef,
-  useImperativeHandle,
-  useRef,
-} from "react";
+import { useState, createRef, useImperativeHandle, useRef } from "react";
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { WithEndpoint } from "odin-react";
@@ -13,7 +7,8 @@ import "./styles.css";
 import InputGroup from "react-bootstrap/InputGroup";
 import Button from "react-bootstrap/Button";
 import Switch from "react-switch";
-import { getNested, format_string } from "./helperFunctions";
+import { getNested, format_string } from "./HelperFunctions";
+import { TitleCard } from "odin-react";
 
 //Dictionary of the default binary values for each DAC
 const DACDefaults = {
@@ -266,7 +261,7 @@ const DAC = React.forwardRef((props, ref) => {
   );
 });
 
-export function DACReadouts(props) {
+function DACReadouts(props) {
   var DACs = [];
   const pathToDACs = ["application", "dacs", "FIELDS"];
 
@@ -306,13 +301,20 @@ export function DACReadouts(props) {
           padding: "5px",
         }}
       >
-        <DAC
-          ref={DACRefs[DACRefs.length - 1].ref}
-          endpoint={props.periodicEndpoint}
-          accessor={key}
-          pathToDACs={pathToDACs}
-          default={DACDefaults[key.toUpperCase()]}
-        />
+        <div className="mytooltip">
+          <DAC
+            ref={DACRefs[DACRefs.length - 1].ref}
+            endpoint={props.periodicEndpoint}
+            accessor={key}
+            pathToDACs={pathToDACs}
+            default={DACDefaults[key.toUpperCase()]}
+          />
+          {
+            <span className="mytooltiptext">
+              {"Function: BitBangShiftRegister.write_field"}
+            </span>
+          }
+        </div>
       </div>
     );
   }
@@ -324,6 +326,7 @@ const Config = React.forwardRef((props, ref) => {
   //give the ref passed in two child refs, toggleRef and inputRef (accessed externally
   //as input and toggle) so that you can access both the toggle and the input externally
   const inputRef = useRef();
+  const toggleRef = useRef();
   useImperativeHandle(ref, () => ({
     focus: () => {
       inputRef.current.focus();
@@ -353,7 +356,7 @@ const Config = React.forwardRef((props, ref) => {
       if (document.activeElement !== inputRef.current){
         reload();
       }
-      //Repeat this process in 1000 milliseconds (repeatTrigger variable is soley used to cause a dependency update in 1000 seconds, causing a rerun of this function.)
+      //Repeat this process in 1000 milliseconds (repeatTrigger variable is solely used to cause a dependency update in 1000 seconds, causing a rerun of this function.)
       setTimeout(() => {
         setRepeatTrigger(repeatTrigger + 1)
       }, 1000);
@@ -426,7 +429,7 @@ const Config = React.forwardRef((props, ref) => {
   );
 });
 
-export function ConfigDisplay(props) {
+function ConfigDisplay(props) {
   var configs = [];
   const pathToConfigs = ["application", "configbits", "FIELDS"];
 
@@ -463,12 +466,19 @@ export function ConfigDisplay(props) {
           padding: "5px",
         }}
       >
-        <Config
-          ref={SRConfigs[SRConfigs.length - 1].ref}
-          endpoint={props.periodicEndpoint}
-          accessor={key}
-          pathToConfigs={pathToConfigs}
-        />
+        <div className="mytooltip">
+          <Config
+            ref={SRConfigs[SRConfigs.length - 1].ref}
+            endpoint={props.periodicEndpoint}
+            accessor={key}
+            pathToConfigs={pathToConfigs}
+          />
+          {
+            <span className="mytooltiptext">
+              {"Function: BitBangShiftRegister.write_field"}
+            </span>
+          }
+        </div>
       </div>
     );
   }
@@ -484,7 +494,7 @@ const ReadoutConfig = React.forwardRef((props, ref) => {
   const inputRef3 = useRef();
   useImperativeHandle(ref, () => ({
     focus: () => {
-      inputRef.current.focus();
+      inputRef1.current.focus();
     },
     get input1() {
       return inputRef1.current;
@@ -658,7 +668,7 @@ const ReadoutConfig = React.forwardRef((props, ref) => {
   );
 });
 
-export function ReadoutConfigDisplay(props) {
+function ReadoutConfigDisplay(props) {
   var configs = [];
   const pathToConfigs = ["application", "readoutconfig", "FIELDS"];
 
@@ -695,12 +705,19 @@ export function ReadoutConfigDisplay(props) {
           padding: "5px",
         }}
       >
-        <ReadoutConfig
-          ref={readoutConfigs[readoutConfigs.length - 1].ref}
-          endpoint={props.periodicEndpoint}
-          accessor={key}
-          pathToConfigs={pathToConfigs}
-        />
+        <div className="mytooltip">
+          <ReadoutConfig
+            ref={readoutConfigs[readoutConfigs.length - 1].ref}
+            endpoint={props.periodicEndpoint}
+            accessor={key}
+            pathToConfigs={pathToConfigs}
+          />
+          {
+            <span className="mytooltiptext">
+              {"Function: BitBangShiftRegister.write_field"}
+            </span>
+          }
+        </div>
       </div>
     );
   }
@@ -711,7 +728,7 @@ export function ReadoutConfigDisplay(props) {
  * iterate through each dac and reset its response to the default, before updating the adapter with the default value.
  * @param {adapterEndpoint} periodicEndpoint - the endpoint to use to update the DAC values
  */
-export function ResetDACs(periodicEndpoint) {
+function ResetDACs(periodicEndpoint) {
   for (let dac of DACRefs) {
     if (dac.ref.current != null) {
       //if the toggle is checked, this DAC is in binary mode
@@ -749,7 +766,7 @@ export function ResetDACs(periodicEndpoint) {
 }
 
 //Overwrite the values currently in the Config inputs (see config functional component) with the values in the parameter tree
-export function resetSRConfig(endpoint) {
+function resetSRConfig(endpoint) {
   var pathToSRConfigs = ["application", "configbits"];
   endpoint
     .put({ ["RESTORE"]: true }, pathToSRConfigs.join("/"))
@@ -768,7 +785,7 @@ export function resetSRConfig(endpoint) {
 }
 
 //Overwrite the values currently in the DAC inputs (see DAC functional component) with the values in the parameter tree
-export function resetDACsToValues(endpoint) {
+function resetDACsToValues(endpoint) {
   var pathToDACs = ["application", "dacs"];
   endpoint
     .put({ ["RESTORE"]: true }, pathToDACs.join("/"))
@@ -787,7 +804,7 @@ export function resetDACsToValues(endpoint) {
 }
 
 //Overwrite the values currently in the ReadoutConfig inputs (see ReadoutConfig functional component) with the values in the parameter tree
-export function resetReadoutConfig(endpoint) {
+function resetReadoutConfig(endpoint) {
   var pathToConfig = ["application", "readoutconfig"];
   endpoint
     .put({ ["RESTORE"]: true }, pathToConfig.join("/"))
@@ -811,7 +828,7 @@ export function resetReadoutConfig(endpoint) {
 }
 
 //Generate the buttons for the title bar of the configuration registers - two buttons, one of which resets any changed values to their true values, and one which applies any changed values.
-export function ApplyResetConfigButtons(props) {
+function ApplyResetConfigButtons(props) {
   if (
     Object.keys(props.periodicEndpoint.data).length > 0 &&
     !props.periodicEndpoint.data.application[props.type].SYNC_ON_WRITE
@@ -838,26 +855,40 @@ export function ApplyResetConfigButtons(props) {
         )} */}
         {Object.keys(props.periodicEndpoint.data).length > 0 &&
         !props.periodicEndpoint.data.application[props.type].SYNC ? (
-          <div style={{ float: "right", marginRight: "5px" }}>
-            <EndpointButton
-              endpoint={props.periodicEndpoint}
-              event_type="click"
-              fullpath={"application/" + props.type + "/SYNC"}
-              value={true}
-            >
-              Apply
-            </EndpointButton>
+          <div className="mytooltip">
+            <div style={{ float: "right", marginRight: "5px" }}>
+              <EndpointButton
+                endpoint={props.periodicEndpoint}
+                event_type="click"
+                fullpath={"application/" + props.type + "/SYNC"}
+                value={true}
+              >
+                Apply
+              </EndpointButton>
+            </div>
+            {
+              <span className="mytooltiptext">
+                {"Function: BitBangShiftRegister.sync_buffer_to_register"}
+              </span>
+            }
           </div>
         ) : (
-          <div style={{ float: "right", marginRight: "5px" }}>
-            <EndpointButton
-              fullpath={"application/" + props.type + "/SYNC"}
-              endpoint={props.periodicEndpoint}
-              event_type="click"
-              //disabled={true}
-            >
-              Apply
-            </EndpointButton>
+          <div className="mytooltip">
+            <div style={{ float: "right", marginRight: "5px" }}>
+              <EndpointButton
+                fullpath={"application/" + props.type + "/SYNC"}
+                endpoint={props.periodicEndpoint}
+                event_type="click"
+                //disabled={true}
+              >
+                Apply
+              </EndpointButton>
+            </div>
+            {
+              <span className="mytooltiptext">
+                {"Function: BitBangShiftRegister.sync_buffer_to_register"}
+              </span>
+            }
           </div>
         )}
       </>
@@ -865,4 +896,114 @@ export function ApplyResetConfigButtons(props) {
   } else {
     return <></>;
   }
+}
+
+export default function Configuration(props) {
+  return (
+    <div className="odin-server">
+      <TitleCard
+        title={
+          <>
+            <p style={{ float: "left" }}>DACs</p>{" "}
+            <div className="mytooltip">
+              <ApplyResetConfigButtons
+                periodicEndpoint={props.periodicEndpoint}
+                func_to_run={resetDACsToValues}
+                type={"dacs"}
+              />
+              {
+                <span className="mytooltiptext">
+                  {"Function: BitBangShiftRegister.restore_register_to_buffer"}
+                </span>
+              }
+            </div>
+            <input
+              onClick={() => ResetDACs(props.periodicEndpoint)}
+              style={{ float: "right", marginRight: "5px" }}
+              className="nice-button"
+              type="button"
+              value="Reset to defaults"
+            />
+          </>
+        }
+      >
+        <div>
+          {Object.keys(props.periodicEndpoint.data).length > 0 ? (
+            <DACReadouts periodicEndpoint={props.periodicEndpoint} />
+          ) : (
+            <>
+              <p style={{ color: "red" }}>
+                Error - no data received from garud detector adapter
+              </p>
+            </>
+          )}
+        </div>
+      </TitleCard>
+      <br />
+      <TitleCard
+        title={
+          <>
+            <p style={{ float: "left" }}>Configuration Shift-Register</p>
+            <div className="mytooltip">
+              <ApplyResetConfigButtons
+                periodicEndpoint={props.periodicEndpoint}
+                func_to_run={resetSRConfig}
+                type={"configbits"}
+              />
+              {
+                <span className="mytooltiptext">
+                  {"Function: BitBangShiftRegister.restore_register_to_buffer"}
+                </span>
+              }
+            </div>
+          </>
+        }
+      >
+        <div>
+          {Object.keys(props.periodicEndpoint.data).length > 0 ? (
+            <ConfigDisplay periodicEndpoint={props.periodicEndpoint} />
+          ) : (
+            <>
+              <p style={{ color: "red" }}>
+                Error - no data received from garud detector adapter
+              </p>
+            </>
+          )}
+        </div>
+      </TitleCard>
+      <br />
+      <TitleCard
+        title={
+          <>
+            <p style={{ float: "left" }}>Readout Config</p>
+            <div className="mytooltip">
+              <ApplyResetConfigButtons
+                periodicEndpoint={props.periodicEndpoint}
+                func_to_run={resetReadoutConfig}
+                type={"readoutconfig"}
+              />
+              {
+                <span className="mytooltiptext">
+                  {"Function: BitBangShiftRegister.restore_register_to_buffer"}
+                </span>
+              }
+            </div>
+          </>
+        }
+      >
+        <div>
+          {Object.keys(props.periodicEndpoint.data).length > 0 ? (
+            <ReadoutConfigDisplay periodicEndpoint={props.periodicEndpoint} />
+          ) : (
+            <>
+              <p style={{ color: "red" }}>
+                Error - no data received from garud detector adapter
+              </p>
+            </>
+          )}
+        </div>
+      </TitleCard>
+      <br />
+    </div>
+  );
 }

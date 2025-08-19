@@ -3,6 +3,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 //import "odin-react/dist/index.css";
 import "./styles.css";
 import Plot from "react-plotly.js";
+import PixelGrid from "./PixelGrid";
+import { TitleCard } from "odin-react";
 
 // a plotly component, to create a heatmap in black and white. The use of memo makes it only rerender when the isEqual function is false
 const Heatmap = React.memo((props) => {
@@ -59,7 +61,7 @@ function isEqual(oldProps, newProps) {
 }
 
 //convert the array of data we are given into a 2d array, then create a heatmap using the plotly library (component defined separately) using that data
-export function DebugRegisterHeatmap(props) {
+function DebugRegisterHeatmap(props) {
   var z_data = [];
   for (let x = 0; x < 64; x++) {
     var temp = [];
@@ -80,7 +82,7 @@ export function DebugRegisterHeatmap(props) {
   return <Heatmap z_data={z_data} />;
 }
 
-export function TriggerReadButton(props) {
+function TriggerReadButton(props) {
   function Send() {
     //set the flag in the parameter tree to true to trigger a read
     props.endpoint
@@ -103,7 +105,7 @@ export function TriggerReadButton(props) {
   );
 }
 
-export function BitAmountInput(props) {
+function BitAmountInput(props) {
   function Send(event, endpoint) {
     var valueToSend = 8192;
     if (event.target.value != "") {
@@ -139,7 +141,7 @@ export function BitAmountInput(props) {
   );
 }
 
-export function BitDepthInput(props) {
+function BitDepthInput(props) {
   function Send(event, endpoint) {
     endpoint
       .put(
@@ -173,5 +175,109 @@ export function BitDepthInput(props) {
         </p>
       </div>
     </>
+  );
+}
+
+export default function Debug_Register(props) {
+  return (
+    <div className="odin-server">
+      {Object.keys(props.periodicEndpoint.data).length > 0 ? (
+        <>
+          <TitleCard title="Menu">
+            <div style={{ width: "49%", float: "left" }}>
+              <TitleCard title="Trigger Reads">
+                <div className="mytooltip">
+                  <TriggerReadButton
+                    endpoint={props.periodicEndpoint}
+                    key={"trigger_single_read"}
+                    name={"Single Read"}
+                  />
+                  {
+                    <span className="mytooltiptext">
+                      {"Function: debugreg_load_serialiser_test_pattern"}
+                    </span>
+                  }
+                </div>
+                <div style={{ width: "100%", height: "20px" }}></div>
+                <div className="mytooltip">
+                  <TriggerReadButton
+                    endpoint={props.periodicEndpoint}
+                    key={"trigger_adc_read"}
+                    name={"ADC Read"}
+                  />
+                  {
+                    <span className="mytooltiptext">
+                      {"Function: debugreg_readout_adc"}
+                    </span>
+                  }
+                </div>
+              </TitleCard>
+            </div>
+            <div style={{ width: "49%", float: "right" }}>
+              <TitleCard title="Read settings">
+                <div className="mytooltip">
+                  <BitAmountInput endpoint={props.periodicEndpoint} />
+                  {
+                    <span className="mytooltiptext">
+                      {"Function: _debugreg_set_depth"}
+                    </span>
+                  }
+                </div>
+                <div style={{ width: "100%", height: "20px" }}></div>
+                <div className="mytooltip">
+                  <BitDepthInput endpoint={props.periodicEndpoint} />
+                  {
+                    <span className="mytooltiptext">
+                      {"Function: _debugreg_adc_set_bit_depth"}
+                    </span>
+                  }
+                </div>
+              </TitleCard>
+            </div>
+          </TitleCard>
+          <br />
+          <PixelGrid
+            title="Debug Register Input"
+            endpoint={props.periodicEndpoint}
+            gridSize={8192}
+            gridWidth={128}
+            colours={["#000", "#fff"]}
+          />
+          <br />
+          <TitleCard title="Debug Register Output">
+            {Object.keys(props.periodicEndpoint.data).length > 0 ? (
+              <DebugRegisterHeatmap periodicEndpoint={props.periodicEndpoint} />
+            ) : (
+              <>
+                <p style={{ color: "red" }}>
+                  Error - no data received from garud detector adapter
+                </p>
+              </>
+            )}
+          </TitleCard>
+          <br />
+        </>
+      ) : (
+        <>
+          <TitleCard title="Menu">
+            <p style={{ color: "red" }}>
+              Error - no data received from garud detector adapter
+            </p>
+          </TitleCard>
+          <br />
+          <TitleCard title="Debug Register Input">
+            <p style={{ color: "red" }}>
+              Error - no data received from garud detector adapter
+            </p>
+          </TitleCard>
+          <br />
+          <TitleCard title="Debug Register Output">
+            <p style={{ color: "red" }}>
+              Error - no data received from garud detector adapter
+            </p>
+          </TitleCard>
+        </>
+      )}
+    </div>
   );
 }

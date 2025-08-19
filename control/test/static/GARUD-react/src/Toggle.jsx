@@ -3,12 +3,12 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { useState, useEffect, forwardRef } from "react";
 import InputGroup from "react-bootstrap/InputGroup";
 import Switch from "react-switch";
-import { getNested } from "./helperFunctions";
+import { getNested } from "./HelperFunctions";
 
 //Ashley's code for a toggleswitch (see odin-react repository on github), slightly edited,
 //so that the label floats to the left and the toggle floats to the right as opposed to both floating to the left
-export var ToggleSwitch = forwardRef((props, ref) => {
-  const { checked, value, id, label, onClick, disabled } = props;
+export const ToggleSwitch = forwardRef((props, ref) => {
+  const { checked, id, label, onClick, disabled } = props;
   const [ischecked, setIsChecked] = useState(checked);
 
   useEffect(() => {
@@ -82,7 +82,7 @@ export var ToggleSwitch = forwardRef((props, ref) => {
  * specific props such as label, onClick function, and checked status based on the data from the
  * endpoint.
  */
-export var Toggle = React.forwardRef((props, ref) => {
+export const Toggle = React.forwardRef((props, ref) => {
   //update the parameter tree when toggled
   function onToggled(event) {
     var valToPut = Number(event.target.value);
@@ -103,7 +103,7 @@ export var Toggle = React.forwardRef((props, ref) => {
   if (props.label != undefined) {
     label = props.label;
   }
-  if (props.fixWidth == undefined || props.fixWidth == null || props.fixWidth) {
+  if (props.fixWidth == undefined || props.fixWidth == null) {
     return (
       <div style={{ width: "24%", marginBottom: "1%" }}>
         <ToggleSwitch
@@ -124,7 +124,7 @@ export var Toggle = React.forwardRef((props, ref) => {
     );
   } else {
     return (
-      <div style={{ marginBottom: "1%" }}>
+      <div style={{ width: props.fixWidth, marginBottom: "1%" }}>
         <ToggleSwitch
           disabled={props.disabled}
           ref={ref}

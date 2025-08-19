@@ -164,13 +164,13 @@ input[type="number"] {
   color: red;
 }
 
-.mytooltip {
+.nametooltip {
   position: relative;
   display: inline-block;
   padding: 5px 0;
 }
 
-.mytooltip .mytooltiptext {
+.nametooltip .nametooltiptext {
   visibility: hidden;
   opacity: 0;
   padding: 5px 5px;
@@ -183,6 +183,46 @@ input[type="number"] {
   bottom: 125%;
   left: 50%;
   margin-left: -60px;
+}
+
+.nametooltip .nametooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #bbb transparent transparent transparent;
+}
+
+.nametooltip:hover .nametooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+.mytooltip {
+  position: relative;
+  /* display: inline-block; */
+}
+
+.mytooltip .mytooltiptext {
+  --tooltip-width: 80%;
+  --tooltip-minwidth: 180px;
+  visibility: hidden;
+  background-color: #bbbbbbee;
+  color: #fff;
+  text-align: center;
+  padding: 5px 5px;
+  border-radius: 6px;
+  position: absolute;
+  z-index: 100;
+  width: max(var(--tooltip-width), var(--tooltip-minwidth));
+  bottom: 125%;
+  left: 50%;
+  margin-left: calc(
+    max(var(--tooltip-width), var(--tooltip-minwidth)) / -2
+  ); /* Use half of the width (120/2 = 60), to center the tooltip */
 }
 
 .mytooltip .mytooltiptext::after {
@@ -198,5 +238,4 @@ input[type="number"] {
 
 .mytooltip:hover .mytooltiptext {
   visibility: visible;
-  opacity: 1;
 }

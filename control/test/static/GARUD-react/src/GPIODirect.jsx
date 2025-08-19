@@ -6,7 +6,7 @@ import { DropdownButton, Dropdown } from "react-bootstrap";
 //import "odin-react/dist/index.css";
 import "./styles.css";
 //import Dropdown from "react-bootstrap/Dropdown";
-import { getNested } from "./helperFunctions";
+import { getNested } from "./HelperFunctions";
 import { Toggle } from "./Toggle";
 
 //A list used to store references to each toggle so that we can save the values of them all, or overwrite their values with a saved set.
@@ -19,7 +19,7 @@ if (configs == null || configs == undefined) {
   configs = {};
 }
 
-export function Toggles(props) {
+function Toggles(props) {
   const pathToIOPins = ["application", "gpio_direct"];
   var toggles = [];
 
@@ -42,27 +42,43 @@ export function Toggles(props) {
           ]
         ) {
           toggles.push(
-            <Toggle
-              key={key}
-              endpoint={props.periodicEndpoint}
-              path={[...pathToIOPins, key]}
-              accessor={"state"}
-              label={<>{String(key)}</>}
-              number={true}
-            />
+            <div className="mytooltip" style={{ width: "24%" }}>
+              <Toggle
+                key={key}
+                endpoint={props.periodicEndpoint}
+                path={[...pathToIOPins, key]}
+                accessor={"state"}
+                label={<>{String(key)}</>}
+                number={true}
+                fixWidth="100%"
+              />
+              {
+                <span className="mytooltiptext">
+                  {"Function: set_pin_value"}
+                </span>
+              }
+            </div>
           );
           //if the toggle is under firmware control recolor it light red and add text to say it is under firmware control
         } else {
           toggles.push(
-            <Toggle
-              key={key}
-              endpoint={props.periodicEndpoint}
-              path={[...pathToIOPins, key]}
-              accessor={"state"}
-              color="#FF8080"
-              label={<>{String(key)} &nbsp; (FW control)</>}
-              number={true}
-            />
+            <div className="mytooltip" style={{ width: "24%" }}>
+              <Toggle
+                key={key}
+                endpoint={props.periodicEndpoint}
+                path={[...pathToIOPins, key]}
+                accessor={"state"}
+                color="#FF8080"
+                label={<>{String(key)} &nbsp; (FW control)</>}
+                number={true}
+                fixWidth="100%"
+              />
+              {
+                <span className="mytooltiptext">
+                  {"Function: set_pin_value"}
+                </span>
+              }
+            </div>
           );
         }
         //if the toggle does not have the option for firmware or software control create a normal toggle
@@ -94,7 +110,7 @@ export function Toggles(props) {
 }
 
 //get the save and load boxes and their inputs displayed in the controls titlecard's title section
-export function SaveLoadBar(props) {
+function SaveLoadBar(props) {
   //stores the name of the currently selected config so we can load it when the load config button is pressed
   const [loadInput, setLoadInput] = useState("None");
   if (Object.keys(configs).length > 0 && loadInput == "None") {
@@ -194,7 +210,6 @@ function loadConfig(loadInput, endpoint) {
 
 //loop through each of the toggles in the loaded config, and generate a dictionary that can be used to update the adapter, which will then itself update the toggles
 function applyConfig(config, endpoint) {
-  const pathToIOPins = ["application", "gpio_direct"];
   var dict = {};
 
   for (let toggleRef of toggleRefs) {
@@ -209,4 +224,55 @@ function applyConfig(config, endpoint) {
     .catch((err) => {
       console.error(err);
     });
+}
+
+export default function GPIO_Direct(props) {
+  return (
+    <div className="odin-server">
+      <TitleCard
+        title={
+          <>
+            <p style={{ float: "left" }}>Controls</p>
+            <SaveLoadBar endpoint={props.periodicEndpoint} />
+          </>
+        }
+      >
+        <div className="wrap-and-compress">
+          {Object.keys(props.periodicEndpoint.data).length > 0 ? (
+            <Toggles
+              periodicEndpoint={props.periodicEndpoint}
+              isOutput={true}
+              debugInputList={props.debugInputList}
+            />
+          ) : (
+            <>
+              <p style={{ color: "red" }}>
+                Error - no data received from garud detector adapter
+              </p>
+            </>
+          )}
+        </div>
+      </TitleCard>
+      <br />
+      <TitleCard title="Debug inputs">
+        <div className="overlay" />
+        <div className="wrap-and-compress">
+          {Object.keys(props.periodicEndpoint.data).length > 0 ? (
+            <Toggles
+              periodicEndpoint={props.periodicEndpoint}
+              isOutput={false}
+              debugInputList={props.debugInputList}
+            />
+          ) : (
+            <>
+              <p style={{ color: "red" }}>
+                Error - no data received from garud detector adapter
+              </p>
+            </>
+          )}
+        </div>
+      </TitleCard>
+      <br />
+    </div>
+  );
 }

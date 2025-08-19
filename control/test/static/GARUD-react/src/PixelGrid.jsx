@@ -45,7 +45,7 @@ export default function PixelGrid(props) {
             margin: "auto 5px",
             backgroundColor: colours[i],
           }}
-          onClick={(event) => setActiveColourIndex(i)}
+          onClick={() => setActiveColourIndex(i)}
           data-index={i}
           className={i === activeColourIndex ? "selected" : ""}
         ></span>
@@ -196,13 +196,21 @@ export default function PixelGrid(props) {
             type="button"
             value="Get"
           />
-          <input
-            style={{ float: "right", marginRight: "5px" }}
-            onClick={Send}
-            className="nice-button"
-            type="button"
-            value="Send"
-          />
+          <div style={{ float: "right", marginRight: "5px" }}>
+            <div className="mytooltip">
+              <input
+                onClick={Send}
+                className="nice-button"
+                type="button"
+                value="Send"
+              />
+              {
+                <span className="mytooltiptext">
+                  {"Function: debugreg_load_serialiser_test_pattern"}
+                </span>
+              }
+            </div>
+          </div>
         </>
       }
     >

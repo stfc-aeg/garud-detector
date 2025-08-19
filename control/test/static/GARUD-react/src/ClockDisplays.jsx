@@ -4,7 +4,7 @@ import Plot from "react-plotly.js";
 import { TitleCard } from "odin-react";
 //import { DropdownButton, Dropdown } from "react-bootstrap/Dropdown";
 import { DropdownButton, Dropdown } from "react-bootstrap";
-import { getNested } from "./helperFunctions";
+import { getNested } from "./HelperFunctions";
 
 function ToggleButton(props) {
   function updateValue() {
@@ -156,12 +156,19 @@ function TextEntries(props) {
   var textEntries = [];
   for (let i = 0; i < props.tps.length; i++) {
     textEntries.push(
-      <TextEntry
-        key={i}
-        alterLineValue={props.alterLineValue}
-        tps={props.tps}
-        i={i}
-      />
+      <div className="mytooltip">
+        <TextEntry
+          key={i}
+          alterLineValue={props.alterLineValue}
+          tps={props.tps}
+          i={i}
+        />
+        {
+          <span className="mytooltiptext">
+            {"Function: pulse_generator.set_channel_point"}
+          </span>
+        }
+      </div>
     );
   }
   return textEntries;
@@ -562,21 +569,28 @@ export function EditableClockGraph(props) {
               Preset:
             </p>
             &nbsp;
-            <input
-              style={{ display: "inline-block", width: "120px" }}
-              className="textInput"
-              type="input"
-              ref={presetRef}
-              value={
-                presetRef.current === document.activeElement
-                  ? presetRef.value
-                  : getNested(
-                      props.periodicEndpoint.data,
-                      props.path.slice(0, props.path.length - 1)
-                    )["preset"].toString(16)
+            <div className="mytooltip" style={{ width: "24%" }}>
+              <input
+                style={{ display: "inline-block", width: "120px" }}
+                className="textInput"
+                type="input"
+                ref={presetRef}
+                value={
+                  presetRef.current === document.activeElement
+                    ? presetRef.value
+                    : getNested(
+                        props.periodicEndpoint.data,
+                        props.path.slice(0, props.path.length - 1)
+                      )["preset"].toString(16)
+                }
+                onKeyDown={editPreset}
+              />
+              {
+                <span className="mytooltiptext">
+                  {"Function: pulse_generator.set_preset"}
+                </span>
               }
-              onKeyDown={editPreset}
-            />
+            </div>
           </div>
         </>
       }
@@ -611,20 +625,34 @@ export function EditableClockGraph(props) {
         </div>
         &nbsp;
         <div style={{ display: "inline-block", marginBottom: "1%" }}>
-          <HighLowToggleButton
-            periodicEndpoint={periodicEndpoint}
-            path={props.path}
-            index={index}
-          />
+          <div className="mytooltip">
+            <HighLowToggleButton
+              periodicEndpoint={periodicEndpoint}
+              path={props.path}
+              index={index}
+            />
+            {
+              <span className="mytooltiptext">
+                {"Function: pulse_generator.set_preset"}
+              </span>
+            }
+          </div>
         </div>
-        <input
-          style={{ float: "right", width: "8%", minWidth: "115px" }}
-          onClick={resetLoopPoint}
-          className="nice-button"
-          type="button"
-          value="Reset LP"
-          readOnly
-        />
+        <div className="mytooltip">
+          <input
+            style={{ float: "right", width: "8%", minWidth: "115px" }}
+            onClick={resetLoopPoint}
+            className="nice-button"
+            type="button"
+            value="Reset LP"
+            readOnly
+          />
+          {
+            <span className="mytooltiptext">
+              {"Function: pulse_generator.set_channel_loop"}
+            </span>
+          }
+        </div>
         <div style={{ float: "right", width: "10px", height: "10px" }} />
         <input
           style={{ float: "right", width: "8%", minWidth: "115px" }}
@@ -698,16 +726,23 @@ export function EditableClockGraph(props) {
           <TextEntries tps={tps} alterLineValue={alterLineValue} />
           <p style={{ display: "inline-block", width: "150px" }}>
             Loop point: <br />
-            <input
-              style={{ width: "100%" }}
-              type="number"
-              ref={lpref}
-              className="textInput"
-              value={
-                lpref.current === document.activeElement ? lpref.value : lp.x0
+            <div className="mytooltip">
+              <input
+                style={{ width: "100%" }}
+                type="number"
+                ref={lpref}
+                className="textInput"
+                value={
+                  lpref.current === document.activeElement ? lpref.value : lp.x0
+                }
+                onKeyDown={(event) => alterLineValue("0", event)}
+              />
+              {
+                <span className="mytooltiptext">
+                  {"Function: pulse_generator.set_channel_loop"}
+                </span>
               }
-              onKeyDown={(event) => alterLineValue("0", event)}
-            />
+            </div>
           </p>
         </div>
       </div>
@@ -882,14 +917,14 @@ function ReadonlyClockGraph(props) {
       }}
     >
       <div style={{ width: "120px" }} onClick={() => props.setIndex(index)}>
-        <div className="mytooltip">
+        <div className="nametooltip">
           {getNested(periodicEndpoint.data, props.path)[String(index)][
             "endpoint"
           ].slice(-11)}
           {getNested(periodicEndpoint.data, props.path)[String(index)][
             "endpoint"
           ].length > 11 ? (
-            <span className="mytooltiptext">
+            <span className="nametooltiptext">
               {
                 getNested(periodicEndpoint.data, props.path)[String(index)][
                   "endpoint"
@@ -981,10 +1016,17 @@ export function ClockGraphs(props) {
             Chip Stimulus Bit Displays
           </p>
           <div style={{ float: "right" }}>
-            <ToggleButton
-              periodicEndpoint={props.periodicEndpoint}
-              path={props.path}
-            />
+            <div className="mytooltip" style={{ width: "24%" }}>
+              <ToggleButton
+                periodicEndpoint={props.periodicEndpoint}
+                path={props.path}
+              />
+              {
+                <span className="mytooltiptext">
+                  {"Function: pulse_generator.enable"}
+                </span>
+              }
+            </div>
           </div>
         </>
       }
