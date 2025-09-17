@@ -43,7 +43,7 @@ export function getPulseGeneratorPages(periodicEndpoint) {
             path={[
               "application",
               "pulse_generators",
-              "pulse_generator_" + String(i),
+              getPulseGeneratorPageNames(periodicEndpoint)[i],
               "channels",
             ]}
           />
@@ -58,16 +58,7 @@ export function getPulseGeneratorPages(periodicEndpoint) {
 
 export function getPulseGeneratorPageNames(periodicEndpoint) {
   if (Object.keys(periodicEndpoint.data).length > 0) {
-    var pageNames = [];
-    for (
-      let i = 0;
-      i <
-      Object.keys(periodicEndpoint.data.application.pulse_generators).length;
-      i++
-    ) {
-      pageNames.push("pulse_generator_" + String(i));
-    }
-    return pageNames;
+    return Object.keys(periodicEndpoint.data.application.pulse_generators);
   } else {
     return [];
   }
