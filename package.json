@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "odin-react": "github:stfc-aeg/odin-react",
-    "vite": "^7.0.5"
-  }
-}
