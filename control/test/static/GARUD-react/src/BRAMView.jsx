@@ -200,7 +200,7 @@ function BRAMFrames(props) {
 
 function BRAMCombinedFrame(props) {
     var title = "BRAM Combined frames  " + props.periodicEndpoint.data.application.bram.control.display_start_frame + " - " + (props.periodicEndpoint.data.application.bram.control.display_start_frame + props.periodicEndpoint.data.application.bram.control.display_num_frames);
-    if (props.periodicEndpoint.data.application.bram.control.display_combined && Object.keys(props.periodicEndpoint.data.application.bram.combined) > 0) {
+    if (props.periodicEndpoint.data.application.bram.control.display_combined && (Object.keys(props.periodicEndpoint.data.application.bram.combined)).length > 0) {
         return (
           <TitleCard title={title}>
             {props.periodicEndpoint.data.application.bram.combined != null ? (
