@@ -103,6 +103,25 @@ function BRAMFrameHeatmap(props) {
   }
   return <Heatmap z_data={z_data} />;
 }
+function BRAMFrames(props) {
+    var framerows = [];
+    for (let frame_number of Object.keys(props.periodicEndpoint.data.application.bram.data)) {
+        framerows.push(
+          <TitleCard title={"BRAM Output frame " + frame_number}>
+            {props.periodicEndpoint.data.application.bram.data[frame_number] != null ? (
+              <BRAMFrameHeatmap periodicEndpoint={props.periodicEndpoint} frame_number={frame_number} />
+            ) : (
+              <>
+                <p style={{ color: "red" }}>
+                  Error - no data received from garud detector adapter
+                </p>
+              </>
+            )}
+          </TitleCard>
+        );
+    }
+    return framerows;
+}
 
 export default function BRAM_View(props) {
   return (
@@ -133,17 +152,7 @@ export default function BRAM_View(props) {
             </div>
           </TitleCard>
           <br />
-          <TitleCard title={"BRAM Output frame " + props.periodicEndpoint.data.application.bram.control.display_start_frame}>
-            {props.periodicEndpoint.data.application.bram.control.display_start_frame != null ? (
-              <BRAMFrameHeatmap periodicEndpoint={props.periodicEndpoint} frame_number={props.periodicEndpoint.data.application.bram.control.display_start_frame} />
-            ) : (
-              <>
-                <p style={{ color: "red" }}>
-                  Error - no data received from garud detector adapter
-                </p>
-              </>
-            )}
-          </TitleCard>
+          <BRAMFrames periodicEndpoint={props.periodicEndpoint} />
           <br />
         </>
       ) : (
