@@ -169,22 +169,22 @@ function BRAMFrameHeatmap(props) {
   }
   for (
     let i = 0;
-    i < props.periodicEndpoint.data.application.bram.data[props.frame_number].length;
+    i < props.framedict[props.frame_number].length;
     i++
   ) {
     z_data[63 - Math.floor(i / 128)][i % 128] =
-      props.periodicEndpoint.data.application.bram.data[props.frame_number][i];
+      props.framedict[props.frame_number][i];
   }
   return <Heatmap z_data={z_data} />;
 }
 function BRAMFrames(props) {
     var framerows = [];
     for (let frame_number of Object.keys(props.periodicEndpoint.data.application.bram.data)) {
-        var title = props.periodicEndpoint.data.application.bram.control.display_combined ? "BRAM Combined frames  " + props.periodicEndpoint.data.application.bram.control.display_start_frame + " - " + props.periodicEndpoint.data.application.bram.control.display_num_frames : "BRAM Output frame " + frame_number;
+        var title = "BRAM Output frame " + frame_number;
         framerows.push(
           <TitleCard title={title}>
             {props.periodicEndpoint.data.application.bram.data[frame_number] != null ? (
-              <BRAMFrameHeatmap periodicEndpoint={props.periodicEndpoint} frame_number={frame_number} />
+              <BRAMFrameHeatmap framedict={props.periodicEndpoint.data.application.bram.data} frame_number={frame_number} />
             ) : (
               <>
                 <p style={{ color: "red" }}>
@@ -196,6 +196,27 @@ function BRAMFrames(props) {
         );
     }
     return framerows;
+}
+
+function BRAMCombinedFrame(props) {
+    var title = "BRAM Combined frames  " + props.periodicEndpoint.data.application.bram.control.display_start_frame + " - " + (props.periodicEndpoint.data.application.bram.control.display_start_frame + props.periodicEndpoint.data.application.bram.control.display_num_frames);
+    if (props.periodicEndpoint.data.application.bram.control.display_combined) {
+        return (
+          <TitleCard title={title}>
+            {props.periodicEndpoint.data.application.bram.combined != null ? (
+              <BRAMFrameHeatmap framedict={props.periodicEndpoint.data.application.bram.combined} frame_number={0} />
+            ) : (
+              <>
+                <p style={{ color: "red" }}>
+                  Error - no data received from garud detector adapter
+                </p>
+              </>
+            )}
+          </TitleCard>
+        );
+    } else {
+        return (<></>);
+    }
 }
 
 export default function BRAM_View(props) {
@@ -243,6 +264,7 @@ export default function BRAM_View(props) {
             </div>
           </TitleCard>
           <br />
+          <BRAMCombinedFrame periodicEndpoint={props.periodicEndpoint} />
           <BRAMFrames periodicEndpoint={props.periodicEndpoint} />
           <br />
         </>
