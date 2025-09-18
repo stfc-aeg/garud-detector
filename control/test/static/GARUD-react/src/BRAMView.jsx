@@ -95,11 +95,11 @@ function BRAMFrameHeatmap(props) {
   }
   for (
     let i = 0;
-    i < props.periodicEndpoint.data.application.bram.data[`frame${props.frame_number}`].length;
+    i < props.periodicEndpoint.data.application.bram.data[props.frame_number].length;
     i++
   ) {
     z_data[63 - Math.floor(i / 128)][i % 128] =
-      props.periodicEndpoint.data.application.bram.data[`frame${props.frame_number}`][i];
+      props.periodicEndpoint.data.application.bram.data[props.frame_number][i];
   }
   return <Heatmap z_data={z_data} />;
 }
@@ -133,9 +133,9 @@ export default function BRAM_View(props) {
             </div>
           </TitleCard>
           <br />
-          <TitleCard title="BRAM Output">
-            {props.periodicEndpoint.data.application.bram.data.frame0 != null ? (
-              <BRAMFrameHeatmap periodicEndpoint={props.periodicEndpoint} frame_number={0} />
+          <TitleCard title={"BRAM Output frame " + props.periodicEndpoint.data.application.bram.control.display_start_frame}>
+            {props.periodicEndpoint.data.application.bram.control.display_start_frame != null ? (
+              <BRAMFrameHeatmap periodicEndpoint={props.periodicEndpoint} frame_number={props.periodicEndpoint.data.application.bram.control.display_start_frame} />
             ) : (
               <>
                 <p style={{ color: "red" }}>
