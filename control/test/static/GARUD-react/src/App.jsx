@@ -43,10 +43,17 @@ export default function App() {
     1000
   );
 
+  var firmware_datetime_str = "unknown";
+  try {
+    var firmware_datetime = new Date(periodicEndpoint.data.application.firmware_datetime * 1000);
+    firmware_datetime_str = firmware_datetime.toLocaleDateString("en-GB") +  " " + firmware_datetime.toLocaleTimeString("en-GB")
+  } catch {
+    console.log("Failed to recover datetime for firmware");
+  }
   return (
     <>
       <OdinApp
-        title="GARUD"
+        title={"GARUD" + "   (FW " + firmware_datetime_str + ")"}
         navLinks={[
           "Main",
           "GPIO Direct",
