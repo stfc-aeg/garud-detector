@@ -19,6 +19,10 @@ function DisplayFrameStartInput(props) {
         console.error(err);
       });
   }
+    function CheckInput(event, endpoint) {
+      console.log(event);
+      event.isTrusted && event.stopImmediatePropagation();
+    }
   return (
     <>
       <div style={{ width: "100%" }}>
@@ -26,7 +30,10 @@ function DisplayFrameStartInput(props) {
           Starting frame (up to {props.periodicEndpoint.data.application.bram.control.max_frame}):
         </p>
         <input
-          onChange={(event) => Send(event, props.periodicEndpoint)}
+          //onChange={(event) => console.log(event, props.periodicEndpoint)}
+          //onInput={(event) => CheckInput(event, props.periodicEndpoint)}
+          onSelect={(event) => Send(event, props.periodicEndpoint)}
+          onBlur={(event) => Send(event, props.periodicEndpoint)}
           className="DisplayFrameStartInput"
           type="range"
           min="0"
@@ -63,7 +70,9 @@ function DisplayFrameNumInput(props) {
           Number of frames to display:
         </p>
         <input
-          onChange={(event) => Send(event, props.periodicEndpoint)}
+          //onChange={(event) => Send(event, props.periodicEndpoint)}
+          onSelect={(event) => Send(event, props.periodicEndpoint)}
+          onBlur={(event) => Send(event, props.periodicEndpoint)}
           className="DisplayFrameNumInput"
           type="range"
           min="1"
