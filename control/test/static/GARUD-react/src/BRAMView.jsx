@@ -98,7 +98,7 @@ const Heatmap = React.memo((props) => {
           showscale: false,
           z: props.z_data,
           type: "heatmap",
-          colorscale: "Greys",
+          colorscale: "Jet",
         },
       ]}
       config={{
@@ -229,6 +229,7 @@ function BRAMCombinedFrame(props) {
 }
 
 export default function BRAM_View(props) {
+    var refreshdate = new Date(props.periodicEndpoint.data.application.bram.control.refresh * 1000)
   return (
     <div className="odin-server">
       {Object.keys(props.periodicEndpoint.data).length > 0 ? (
@@ -239,7 +240,7 @@ export default function BRAM_View(props) {
                 <div className="mytooltip">
                   <TriggerReadButton
                     endpoint={props.periodicEndpoint}
-                    name={"Refresh"}
+                    name={"Refresh (" + refreshdate.toLocaleTimeString("en-GB") + ")"}
                   />
                   {
                     <span className="mytooltiptext">
