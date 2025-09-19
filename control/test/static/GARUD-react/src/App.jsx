@@ -8,6 +8,7 @@ import Main from "./MainPage";
 import GPIO_Direct from "./GPIODirect";
 import Configuration from "./Configuration";
 import Debug_Register from "./DebugRegister";
+import BRAM_View from "./BRAMView";
 import Sensor_Stimulus from "./SensorStimulus";
 import {
   getPulseGeneratorPageNames,
@@ -53,6 +54,7 @@ export default function App() {
           "Debug Register",
           "Sensor Stimulus",
           { "Pulse Generators": getPulseGeneratorPageNames(periodicEndpoint) },
+          "BRAM View",
           "Detector JSON",
           "Power Supply JSON",
         ]}
@@ -82,6 +84,9 @@ export default function App() {
           />
         </Container>
         {getPulseGeneratorPages(periodicEndpoint)}
+        <Container>
+          <BRAM_View periodicEndpoint={periodicEndpoint} />
+        </Container>
         <Container>
           <JSON_Display
             title={"Detector JSON Data"}
