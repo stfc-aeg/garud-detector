@@ -9,6 +9,9 @@ import Button from 'react-bootstrap/Button';
 import Badge from 'react-bootstrap/Badge';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import Form from 'react-bootstrap/Form';
+import Stack from 'react-bootstrap/Stack';
+
 
 function DisplayFrameStartInput(props) {
   function Send(event, endpoint) {
@@ -195,7 +198,7 @@ function BRAMFrameHeatmap(props) {
       }
 
       // Stacked rectangular heatmap
-      return <OdinGraph title="Heatmap" data={z_data} type="heatmap"/>;
+      return <OdinGraph title="Heatmap" data={stacked_data} type="heatmap"/>;
   } else if (props.frame_display_mode == 'line_heatmap') {
       // 'barcode' single line heatmap
       return <OdinGraph title="Heatmap" data={[props.framedict[props.frame_number]]} type="heatmap"/>;
@@ -212,7 +215,50 @@ function BRAMFrameHeatmap(props) {
 
 }
 
+function FrameDisplayModeSelect(props) {
+    function Send(event, mode) {
+        if (event.target.checked) {
+            console.log(mode);
+            props.mode_set_callback(mode);
+        }
+    }
+    return (
+        <Form>
+            <div key={`inline-radio`} className="mb-3">
+                <Form.Check
+                    inline
+                    label="stacked"
+                    name="group1"
+                    type={'radio'}
+                    id={`inline-radio-1`}
+                    onClick={(event) => Send(event, "stacked")}
+                />
+                <Form.Check
+                    inline
+                    label="line_heatmap"
+                    name="group1"
+                    type={'radio'}
+                    id={`inline-radio-1`}
+                    onClick={(event) => Send(event, "line_heatmap")}
+                />
+                <Form.Check
+                    inline
+                    label="line"
+                    name="group1"
+                    type={'radio'}
+                    id={`inline-radio-1`}
+                    onClick={(event) => Send(event, "line")}
+                />
+            </div>
+        </Form>
+    )
+}
+
+
 function BRAMFrames(props) {
+    // Shared frame display mode for all single-bit frames
+    const [frame_display_mode, setFrameDisplayMode] = useState('stacked');
+
     var framerows = [];
     for (let frame_number of Object.keys(props.periodicEndpoint.data.application.bram.data)) {
         var title = "BRAM Output frame " + frame_number;
@@ -220,7 +266,7 @@ function BRAMFrames(props) {
             <Col xxl={6}>
           <TitleCard title={title}>
             {props.periodicEndpoint.data.application.bram.data[frame_number] != null ? (
-              <BRAMFrameHeatmap framedict={props.periodicEndpoint.data.application.bram.data} frame_number={frame_number} frame_display_mode='line_heatmap'/>
+              <BRAMFrameHeatmap framedict={props.periodicEndpoint.data.application.bram.data} frame_number={frame_number} frame_display_mode={frame_display_mode}/>
             ) : (
               <>
                 <p style={{ color: "red" }}>
@@ -232,17 +278,27 @@ function BRAMFrames(props) {
             </Col>
         );
     }
-    return <Row>{framerows}</Row>;
+    return (
+        <Col>
+        <TitleCard title={<Row><Col>"Single bit frames"</Col><Col><FrameDisplayModeSelect  mode_set_callback={setFrameDisplayMode}/></Col></Row>}>
+            <Row>
+                {framerows}
+            </Row>
+        </TitleCard>
+        </Col>
+    );
 }
 
 function BRAMCombinedFrame(props) {
+    const [frame_display_mode, setFrameDisplayMode] = useState('stacked');
+
     var title = "BRAM Combined frames  " + props.periodicEndpoint.data.application.bram.control.display_start_frame + " - " + (props.periodicEndpoint.data.application.bram.control.display_start_frame + props.periodicEndpoint.data.application.bram.control.display_num_frames - 1);
     if (props.periodicEndpoint.data.application.bram.control.display_combined && (Object.keys(props.periodicEndpoint.data.application.bram.combined)).length > 0) {
         return (
         <Col>
-          <TitleCard title={title}>
+          <TitleCard title={<Row><Col>{title}</Col><Col><FrameDisplayModeSelect  mode_set_callback={setFrameDisplayMode}/></Col></Row>}>
             {props.periodicEndpoint.data.application.bram.combined != null ? (
-              <BRAMFrameHeatmap framedict={props.periodicEndpoint.data.application.bram.combined} frame_number={0} frame_display_mode='line_heatmap'/>
+              <BRAMFrameHeatmap framedict={props.periodicEndpoint.data.application.bram.combined} frame_number={0} frame_display_mode={frame_display_mode}/>
             ) : (
               <>
                 <p style={{ color: "red" }}>
@@ -265,52 +321,56 @@ const BRAMExportButton_ConversionTrigger = WithEndpoint(Button);
 function BRAMExportControls(props) {
     return (
       <TitleCard title="Export">
-        <Row>
-            <Col>
-                {props.periodicEndpoint.data.application.bram.export.status.error != null ? (
-                    <p style={{color:"red"}}>Error: {props.periodicEndpoint.data.application.bram.export.status.error}</p>
-                ) : (
-                    <>
-                    {props.periodicEndpoint.data.application.bram.export.status.done == true ? (
-                        <p style={{color:"green"}}>Done - exported to {props.periodicEndpoint.data.application.bram.export.status.last_successful_export} in {props.periodicEndpoint.data.application.bram.export.status.time_s}s</p>
+        <Stack gap={1}>
+            <Row>
+                <Col>
+                    {props.periodicEndpoint.data.application.bram.export.status.error != null ? (
+                        <p style={{color:"red"}}>Error: {props.periodicEndpoint.data.application.bram.export.status.error}</p>
                     ) : (
-                        <p></p>
+                        <>
+                        {props.periodicEndpoint.data.application.bram.export.status.done == true ? (
+                            <p style={{color:"green"}}>Done - exported to {props.periodicEndpoint.data.application.bram.export.status.last_successful_export} in {props.periodicEndpoint.data.application.bram.export.status.time_s}s</p>
+                        ) : (
+                            <p></p>
+                        )}
+                        </>
                     )}
-                    </>
-                )}
-                <InputGroup>
-                  <InputGroup.Text>Export Directory</InputGroup.Text>
-                  <EndpointInput endpoint={props.periodicEndpoint} fullpath="application/bram/export/shared_settings/export_directory"/>
-                </InputGroup>
-                <InputGroup>
-                  <InputGroup.Text>Export Filename</InputGroup.Text>
-                  <EndpointInput endpoint={props.periodicEndpoint} fullpath="application/bram/export/shared_settings/export_filename"/>
-                </InputGroup>
-            </Col>
-        </Row>
-        <Row>
-            <Col>
-              <TitleCard title="Mode 1 - Displayed Readings" >
-                <BRAMExportButton_DisplayedTrigger endpoint={props.periodicEndpoint} fullpath="application/bram/export/modes/displayed/trigger" value={true} variant="success">
-                  Export Displayed Frames
-                </BRAMExportButton_DisplayedTrigger>
-              </TitleCard>
-            </Col>
-            <Col>
-              <TitleCard title="Mode 2 - BlockRAM Conversion" >
-                <BRAMExportButton_ConversionTrigger endpoint={props.periodicEndpoint} fullpath="application/bram/export/modes/bram_converted/trigger" value={true} variant="success">
-                  Export and Convert BRAM Pixels
-                </BRAMExportButton_ConversionTrigger>
-              </TitleCard>
-            </Col>
-            <Col>
-              <TitleCard title="Mode 3 - BlockRAM Raw Binary" >
-                <BRAMExportButton_RAWTrigger endpoint={props.periodicEndpoint} fullpath="application/bram/export/modes/bram_raw/trigger" value={true} variant="success">
-                  Export Raw BlockRAM Contents
-                </BRAMExportButton_RAWTrigger>
-              </TitleCard>
-            </Col>
-        </Row>
+                    <Stack gap={1}>
+                        <InputGroup>
+                          <InputGroup.Text>Export Directory</InputGroup.Text>
+                          <EndpointInput endpoint={props.periodicEndpoint} fullpath="application/bram/export/shared_settings/export_directory"/>
+                        </InputGroup>
+                        <InputGroup>
+                          <InputGroup.Text>Export Filename</InputGroup.Text>
+                          <EndpointInput endpoint={props.periodicEndpoint} fullpath="application/bram/export/shared_settings/export_filename"/>
+                        </InputGroup>
+                    </Stack>
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                  <TitleCard title="Mode 1 - Displayed Readings" >
+                    <BRAMExportButton_DisplayedTrigger endpoint={props.periodicEndpoint} fullpath="application/bram/export/modes/displayed/trigger" value={true} variant="success">
+                      Export Displayed Frames
+                    </BRAMExportButton_DisplayedTrigger>
+                  </TitleCard>
+                </Col>
+                <Col>
+                  <TitleCard title="Mode 2 - BlockRAM Conversion" >
+                    <BRAMExportButton_ConversionTrigger endpoint={props.periodicEndpoint} fullpath="application/bram/export/modes/bram_converted/trigger" value={true} variant="success">
+                      Export and Convert BRAM Pixels
+                    </BRAMExportButton_ConversionTrigger>
+                  </TitleCard>
+                </Col>
+                <Col>
+                  <TitleCard title="Mode 3 - BlockRAM Raw Binary" >
+                    <BRAMExportButton_RAWTrigger endpoint={props.periodicEndpoint} fullpath="application/bram/export/modes/bram_raw/trigger" value={true} variant="success">
+                      Export Raw BlockRAM Contents
+                    </BRAMExportButton_RAWTrigger>
+                  </TitleCard>
+                </Col>
+            </Row>
+        </Stack>
       </TitleCard>
     );
 }
@@ -366,7 +426,7 @@ export default function BRAM_View(props) {
   return (
     <div className="odin-server">
       {Object.keys(props.periodicEndpoint.data).length > 0 ? (
-      <>
+      <Stack gap={2}>
         <Row>
           <Col xl={12} xxl={6}>
               <BRAMDisplayTrigger periodicEndpoint={props.periodicEndpoint} />
@@ -377,17 +437,12 @@ export default function BRAM_View(props) {
           <br />
         </Row>
         <Row>
-          <Col>
-          <Row>
           <BRAMCombinedFrame periodicEndpoint={props.periodicEndpoint} />
-          </Row>
-          <Row>
-          <BRAMFrames periodicEndpoint={props.periodicEndpoint} />
-          </Row>
-          </Col>
-          <br />
         </Row>
-      </>
+        <Row>
+          <BRAMFrames periodicEndpoint={props.periodicEndpoint} />
+        </Row>
+      </Stack>
       ) : (
         <></>
       )}
