@@ -378,9 +378,11 @@ function BRAMExportControls(props) {
 }
 
 const BRAMDiplsayButton_AutoRefreshToggle = WithEndpoint(Button);
+const BRAMClearButton_Trigger = WithEndpoint(Button);
 function BRAMDisplayTrigger(props) {
     var refreshdate = new Date(props.periodicEndpoint.data.application.bram.control.refresh_time * 1000)
     return (
+    <>
       <TitleCard title="Displayed Frames">
         <Stack gap={1}>
             <Row>
@@ -422,6 +424,12 @@ function BRAMDisplayTrigger(props) {
             </Row>
         </Stack>
       </TitleCard>
+      <TitleCard title="Advanced">
+        <BRAMClearButton_Trigger endpoint={props.periodicEndpoint} fullpath="application/bram/clear" value={true} variant="danger">
+          Clear BlockRAM Contents
+        </BRAMClearButton_Trigger>
+      </TitleCard>
+    </>
     );
 }
 
