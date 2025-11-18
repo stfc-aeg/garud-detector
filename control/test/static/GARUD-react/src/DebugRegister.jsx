@@ -83,10 +83,10 @@ function DebugRegisterHeatmap(props) {
 }
 
 function TriggerReadButton(props) {
-  function Send() {
+  function Send(event) {
     //set the flag in the parameter tree to true to trigger a read
     props.endpoint
-      .put({ [props.key]: true }, "application/debugreg")
+      .put({ [props.trigger_key]: true }, "application/debugreg")
       .then((response) => {
         props.endpoint.mergeData(response, "application/debugreg");
       })
@@ -189,7 +189,7 @@ export default function Debug_Register(props) {
                 <div className="mytooltip">
                   <TriggerReadButton
                     endpoint={props.periodicEndpoint}
-                    key={"trigger_single_read"}
+                    trigger_key={"trigger_single_read"}
                     name={"Single Read"}
                   />
                   {
@@ -202,7 +202,7 @@ export default function Debug_Register(props) {
                 <div className="mytooltip">
                   <TriggerReadButton
                     endpoint={props.periodicEndpoint}
-                    key={"trigger_adc_read"}
+                    trigger_key={"trigger_adc_read"}
                     name={"ADC Read"}
                   />
                   {
