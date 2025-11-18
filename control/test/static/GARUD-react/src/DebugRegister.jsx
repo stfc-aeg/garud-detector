@@ -5,6 +5,8 @@ import "./styles.css";
 import Plot from "react-plotly.js";
 import PixelGrid from "./PixelGrid";
 import { TitleCard } from "odin-react";
+import Button from 'react-bootstrap/Button'
+import Spinner from 'react-bootstrap/Spinner'
 
 // a plotly component, to create a heatmap in black and white. The use of memo makes it only rerender when the isEqual function is false
 const Heatmap = React.memo((props) => {
@@ -83,6 +85,7 @@ function DebugRegisterHeatmap(props) {
 }
 
 function TriggerReadButton(props) {
+  var executing = props.endpoint.data.application.debugreg.trigger_adc_read ||props.endpoint.data.application.debugreg.trigger_single_read;
   function Send(event) {
     //set the flag in the parameter tree to true to trigger a read
     props.endpoint
@@ -95,13 +98,21 @@ function TriggerReadButton(props) {
       });
   }
   return (
-    <input
-      style={{ width: "100%" }}
+    ///<input
+    ///  style={{ width: "100%" }}
+    ///  onClick={Send}
+    ///  className="nice-button"
+    ///  type="button"
+    ///  value={props.name}
+    ///  disabled={executing}
+    ////>
+    <Button
       onClick={Send}
-      className="nice-button"
-      type="button"
-      value={props.name}
-    />
+      disabled={executing}
+    >
+      {props.name}
+      {(executing) && <Spinner animation="border" size="sm" />}
+    </Button>
   );
 }
 
@@ -191,6 +202,7 @@ export default function Debug_Register(props) {
                     endpoint={props.periodicEndpoint}
                     trigger_key={"trigger_single_read"}
                     name={"Single Read"}
+                    disabled={true}
                   />
                   {
                     <span className="mytooltiptext">

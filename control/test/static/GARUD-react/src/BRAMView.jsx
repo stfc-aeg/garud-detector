@@ -11,90 +11,9 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Stack from 'react-bootstrap/Stack';
+import Spinner from 'react-bootstrap/Spinner'
+import ProgressBar from 'react-bootstrap/ProgressBar'
 
-
-function DisplayFrameStartInput(props) {
-  function Send(event, endpoint) {
-    endpoint
-      .put(
-        { ["display_start_frame"]: Number(event.target.value) },
-        "application/bram/control"
-      )
-      .then((response) => {
-        endpoint.mergeData(response, "application/bram/control");
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }
-    function CheckInput(event, endpoint) {
-      console.log(event);
-      event.isTrusted && event.stopImmediatePropagation();
-    }
-  return (
-    <>
-      <div style={{ width: "100%" }}>
-        <p style={{ width: "240px", display: "inline-block" }}>
-          Starting frame (up to {props.periodicEndpoint.data.application.bram.control.max_frame}):
-        </p>
-        <input
-          //onChange={(event) => console.log(event, props.periodicEndpoint)}
-          //onInput={(event) => CheckInput(event, props.periodicEndpoint)}
-          onSelect={(event) => Send(event, props.periodicEndpoint)}
-          onBlur={(event) => Send(event, props.periodicEndpoint)}
-          className="DisplayFrameStartInput"
-          type="range"
-          min="0"
-          max={props.periodicEndpoint.data.application.bram.control.max_frame}
-        />
-        <p
-          style={{ width: "30px", marginLeft: "10px", display: "inline-block" }}
-        >
-          {props.periodicEndpoint.data.application.bram.control.display_start_frame}
-        </p>
-      </div>
-    </>
-  );
-}
-
-function DisplayFrameNumInput(props) {
-  function Send(event, endpoint) {
-    endpoint
-      .put(
-        { ["display_num_frames"]: Number(event.target.value) },
-        "application/bram/control"
-      )
-      .then((response) => {
-        endpoint.mergeData(response, "application/bram/control");
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }
-  return (
-    <>
-      <div style={{ width: "100%" }}>
-        <p style={{ width: "240px", display: "inline-block" }}>
-          Number of frames to display:
-        </p>
-        <input
-          //onChange={(event) => Send(event, props.periodicEndpoint)}
-          onSelect={(event) => Send(event, props.periodicEndpoint)}
-          onBlur={(event) => Send(event, props.periodicEndpoint)}
-          className="DisplayFrameNumInput"
-          type="range"
-          min="1"
-          max={props.periodicEndpoint.data.application.bram.control.max_frame - props.periodicEndpoint.data.application.bram.control.display_start_frame}
-        />
-        <p
-          style={{ width: "30px", marginLeft: "10px", display: "inline-block" }}
-        >
-          {props.periodicEndpoint.data.application.bram.control.display_num_frames}
-        </p>
-      </div>
-    </>
-  );
-}
 
 // a plotly component, to create a heatmap in black and white. The use of memo makes it only rerender when the isEqual function is false
 const Heatmap = (props) => {
@@ -314,6 +233,89 @@ function BRAMCombinedFrame(props) {
     }
 }
 
+const BRAMControlButton_ResetToggle = WithEndpoint(Button);
+const BRAMControlButton_LoopEnableToggle = WithEndpoint(Button);
+function BRAMControls(props) {
+    return (
+        <TitleCard title="BRAM Control">
+            <Stack gap={1}>
+                <Row>
+                    <Col>
+                        <BRAMControlButton_ResetToggle endpoint={props.periodicEndpoint} fullpath="application/bram/fw_control/reset" value={!props.periodicEndpoint.data.application.bram.fw_control.reset} variant={props.periodicEndpoint.data.application.bram.fw_control.reset ? ("warning") : ("success")}>
+                        {props.periodicEndpoint.data.application.bram.fw_control.reset ? (<b>In Reset</b>) : ("Out of Reset")}
+                        </BRAMControlButton_ResetToggle>
+                    </Col>
+                    <Col>
+                        <BRAMControlButton_LoopEnableToggle endpoint={props.periodicEndpoint} fullpath="application/bram/fw_control/loop_point_enabled" value={!props.periodicEndpoint.data.application.bram.fw_control.loop_point_enabled} variant={props.periodicEndpoint.data.application.bram.fw_control.loop_point_enabled ? ("success") : ("secondary")}>
+                        {props.periodicEndpoint.data.application.bram.fw_control.loop_point_enabled ? (<>Loop Point Enabled</>) : (<>Loop Point Disabled</>)}
+                        </BRAMControlButton_LoopEnableToggle>
+                    </Col>
+                </Row>
+                <Row>
+                    <Stack gap={1}>
+                        <InputGroup>
+                          <InputGroup.Text>Counter Loop Point</InputGroup.Text>
+                          <EndpointInput endpoint={props.periodicEndpoint} fullpath="application/bram/fw_control/counter_loop_point"/>
+                        </InputGroup>
+                        <InputGroup>
+                          <InputGroup.Text>Counter Reset Value</InputGroup.Text>
+                          <EndpointInput endpoint={props.periodicEndpoint} fullpath="application/bram/fw_control/counter_reset_value"/>
+                        </InputGroup>
+                        <InputGroup>
+                          <InputGroup.Text>Counter Shift Value</InputGroup.Text>
+                          <EndpointInput endpoint={props.periodicEndpoint} fullpath="application/bram/fw_control/shift_value"/>
+                        </InputGroup>
+                    </Stack>
+                </Row>
+                <Row>
+                    <Col>
+                        Count: <Badge>{props.periodicEndpoint.data.application.bram.fw_control.counter}</Badge>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col hidden={props.periodicEndpoint.data.application.bram.fw_control.counter_loop_point == 0 || !props.periodicEndpoint.data.application.bram.fw_control.loop_point_enabled}>
+                        To Loop Point
+                        <ProgressBar>
+                            <ProgressBar
+                                striped
+                                variant="success"
+                                now={props.periodicEndpoint.data.application.bram.fw_control.counter}
+                                max={props.periodicEndpoint.data.application.bram.fw_control.counter_loop_point}
+                                label={props.periodicEndpoint.data.application.bram.fw_control.counter+ "/" + props.periodicEndpoint.data.application.bram.fw_control.counter_loop_point}
+                            />
+                            <ProgressBar
+                                variant="secondary"
+                                now={props.periodicEndpoint.data.application.bram.fw_control.counter_loop_point - props.periodicEndpoint.data.application.bram.fw_control.counter}
+                                max={props.periodicEndpoint.data.application.bram.fw_control.counter_loop_point}
+                                key={2}
+                                visuallyHidden={props.periodicEndpoint.data.application.bram.fw_control.counter_loop_point > 0}
+                            />
+                        </ProgressBar>
+                    </Col>
+                    <Col>
+                        Full BRAM
+                        <ProgressBar>
+                            <ProgressBar
+                                striped
+                                variant="success"
+                                now={props.periodicEndpoint.data.application.bram.fw_control.counter}
+                                max={props.periodicEndpoint.data.application.bram.fw_control.max_count}
+                                key={1}
+                            />
+                            <ProgressBar
+                                variant="secondary"
+                                now={props.periodicEndpoint.data.application.bram.fw_control.counter_loop_point - props.periodicEndpoint.data.application.bram.fw_control.counter}
+                                max={props.periodicEndpoint.data.application.bram.fw_control.max_count}
+                                key={2}
+                                visuallyHidden={props.periodicEndpoint.data.application.bram.fw_control.counter_loop_point > 0}
+                            />
+                        </ProgressBar>
+                    </Col>
+                </Row>
+            </Stack>
+        </TitleCard>
+    );
+}
 
 const BRAMExportButton_DisplayedTrigger = WithEndpoint(Button);
 const BRAMExportButton_RAWTrigger = WithEndpoint(Button);
@@ -375,50 +377,59 @@ function BRAMExportControls(props) {
     );
 }
 
+const BRAMDiplsayButton_AutoRefreshToggle = WithEndpoint(Button);
+const BRAMClearButton_Trigger = WithEndpoint(Button);
 function BRAMDisplayTrigger(props) {
-    var refreshdate = new Date(props.periodicEndpoint.data.application.bram.control.refresh * 1000)
+    var refreshdate = new Date(props.periodicEndpoint.data.application.bram.control.refresh_time * 1000)
     return (
-      <TitleCard title="Display Trigger">
-        <Row>
-        <Col>
-          <TitleCard title="Trigger Reads">
-            <div className="mytooltip">
-              <TriggerReadButton
-                endpoint={props.periodicEndpoint}
-                name={"Refresh (" + refreshdate.toLocaleTimeString("en-GB") + ")"}
-              />
-              {
-                <span className="mytooltiptext">
-                  {"Function: _bram_refresh"}
-                </span>
-              }
-            </div>
-            <div style={{ width: "100%", height: "20px" }}></div>
-          </TitleCard>
-        </Col>
-        <Col>
-          <TitleCard title="Read settings">
-            <div className="mytooltip">
-              <DisplayFrameStartInput periodicEndpoint={props.periodicEndpoint} />
-              {
-                <span className="mytooltiptext">
-                  {"Function: UPDATEME"}
-                </span>
-              }
-            </div>
-            <div style={{ width: "100%", height: "20px" }}></div>
-            <div className="mytooltip">
-              <DisplayFrameNumInput periodicEndpoint={props.periodicEndpoint} />
-              {
-                <span className="mytooltiptext">
-                  {"Function: UPDATEME"}
-                </span>
-              }
-            </div>
-          </TitleCard>
-        </Col>
-        </Row>
+    <>
+      <TitleCard title="Displayed Frames">
+        <Stack gap={1}>
+            <Row>
+                <Col>
+                    <div className="mytooltip">
+                      <TriggerReadButton
+                        endpoint={props.periodicEndpoint}
+                        name={"Refresh (" + refreshdate.toLocaleTimeString("en-GB") + ")"}
+                      />
+                      {
+                        <span className="mytooltiptext">
+                          {"Function: _bram_refresh"}
+                        </span>
+                      }
+                    </div>
+                </Col>
+                <Col>
+                    <BRAMDiplsayButton_AutoRefreshToggle endpoint={props.periodicEndpoint} fullpath="application/bram/control/refresh_continuous" value={!props.periodicEndpoint.data.application.bram.control.refresh_continuous} variant={props.periodicEndpoint.data.application.bram.control.refresh_continuous ? ("warning") : ("secondary")}>
+                    {props.periodicEndpoint.data.application.bram.control.refresh_continuous ? (<b>Auto</b>) : ("Auto")}
+                    </BRAMDiplsayButton_AutoRefreshToggle>
+                </Col>
+                <Col>
+                    {(props.periodicEndpoint.data.application.bram.control.refresh) && <Spinner animation="border" size="sm" />}
+                </Col>
+            </Row>
+            <Row>
+                <Stack gap={1}>
+                    <InputGroup>
+                      <InputGroup.Text>
+                        Starting frame (up to {props.periodicEndpoint.data.application.bram.control.max_frame}):
+                      </InputGroup.Text>
+                      <EndpointInput endpoint={props.periodicEndpoint} fullpath="application/bram/control/display_start_frame"/>
+                    </InputGroup>
+                    <InputGroup>
+                      <InputGroup.Text>Number of frames to display</InputGroup.Text>
+                      <EndpointInput endpoint={props.periodicEndpoint} fullpath="application/bram/control/display_num_frames"/>
+                    </InputGroup>
+                </Stack>
+            </Row>
+        </Stack>
       </TitleCard>
+      <TitleCard title="Advanced">
+        <BRAMClearButton_Trigger endpoint={props.periodicEndpoint} fullpath="application/bram/clear" value={true} variant="danger">
+          Clear BlockRAM Contents
+        </BRAMClearButton_Trigger>
+      </TitleCard>
+    </>
     );
 }
 
@@ -428,8 +439,11 @@ export default function BRAM_View(props) {
       {Object.keys(props.periodicEndpoint.data).length > 0 ? (
       <Stack gap={2}>
         <Row>
-          <Col xl={12} xxl={6}>
+          <Col xl={12} xxl={3}>
               <BRAMDisplayTrigger periodicEndpoint={props.periodicEndpoint} />
+          </Col>
+          <Col xl={12} xxl={3}>
+              <BRAMControls periodicEndpoint={props.periodicEndpoint} />
           </Col>
           <Col xl={12} xxl={6}>
               <BRAMExportControls periodicEndpoint={props.periodicEndpoint} />
