@@ -11,6 +11,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Stack from 'react-bootstrap/Stack';
+import Spinner from 'react-bootstrap/Spinner'
 
 
 // a plotly component, to create a heatmap in black and white. The use of memo makes it only rerender when the isEqual function is false
@@ -239,7 +240,7 @@ function BRAMControls(props) {
             <Stack gap={1}>
                 <Row>
                     <Col>
-                        <BRAMControlButton_ResetToggle endpoint={props.periodicEndpoint} fullpath="application/bram/fw_control/reset" value={!props.periodicEndpoint.data.application.bram.fw_control.reset} variant={props.periodicEndpoint.data.application.bram.fw_control.reset ? ("warning") : ("primary")}>
+                        <BRAMControlButton_ResetToggle endpoint={props.periodicEndpoint} fullpath="application/bram/fw_control/reset" value={!props.periodicEndpoint.data.application.bram.fw_control.reset} variant={props.periodicEndpoint.data.application.bram.fw_control.reset ? ("warning") : ("success")}>
                         {props.periodicEndpoint.data.application.bram.fw_control.reset ? (<b>In Reset</b>) : ("Out of Reset")}
                         </BRAMControlButton_ResetToggle>
                     </Col>
@@ -335,23 +336,34 @@ function BRAMExportControls(props) {
     );
 }
 
+const BRAMDiplsayButton_AutoRefreshToggle = WithEndpoint(Button);
 function BRAMDisplayTrigger(props) {
-    var refreshdate = new Date(props.periodicEndpoint.data.application.bram.control.refresh * 1000)
+    var refreshdate = new Date(props.periodicEndpoint.data.application.bram.control.refresh_time * 1000)
     return (
       <TitleCard title="Displayed Frames">
         <Stack gap={1}>
             <Row>
-                <div className="mytooltip">
-                  <TriggerReadButton
-                    endpoint={props.periodicEndpoint}
-                    name={"Refresh (" + refreshdate.toLocaleTimeString("en-GB") + ")"}
-                  />
-                  {
-                    <span className="mytooltiptext">
-                      {"Function: _bram_refresh"}
-                    </span>
-                  }
-                </div>
+                <Col>
+                    <div className="mytooltip">
+                      <TriggerReadButton
+                        endpoint={props.periodicEndpoint}
+                        name={"Refresh (" + refreshdate.toLocaleTimeString("en-GB") + ")"}
+                      />
+                      {
+                        <span className="mytooltiptext">
+                          {"Function: _bram_refresh"}
+                        </span>
+                      }
+                    </div>
+                </Col>
+                <Col>
+                    <BRAMDiplsayButton_AutoRefreshToggle endpoint={props.periodicEndpoint} fullpath="application/bram/control/refresh_continuous" value={!props.periodicEndpoint.data.application.bram.control.refresh_continuous} variant={props.periodicEndpoint.data.application.bram.control.refresh_continuous ? ("warning") : ("secondary")}>
+                    {props.periodicEndpoint.data.application.bram.control.refresh_continuous ? (<b>Auto</b>) : ("Auto")}
+                    </BRAMDiplsayButton_AutoRefreshToggle>
+                </Col>
+                <Col>
+                    {(props.periodicEndpoint.data.application.bram.control.refresh) && <Spinner animation="border" size="sm" />}
+                </Col>
             </Row>
             <Row>
                 <Stack gap={1}>
