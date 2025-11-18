@@ -198,13 +198,13 @@ function BRAMFrameHeatmap(props) {
       }
 
       // Stacked rectangular heatmap
-      return <OdinGraph title="Heatmap" data={stacked_data} type="heatmap"/>;
+      return <OdinGraph title="Frame data - stacked" data={stacked_data} type="heatmap"/>;
   } else if (props.frame_display_mode == 'line_heatmap') {
       // 'barcode' single line heatmap
-      return <OdinGraph title="Heatmap" data={[props.framedict[props.frame_number]]} type="heatmap"/>;
+      return <OdinGraph title="Frame data - line heatmap" data={[props.framedict[props.frame_number]]} type="heatmap"/>;
   } else if (props.frame_display_mode == 'line') {
       // single line line graph
-      return <OdinGraph title="Heatmap" data={props.framedict[props.frame_number]}/>;
+      return <OdinGraph title="Frame data - line" data={props.framedict[props.frame_number]}/>;
   } else {
       return (
           <p style={{color:"red"}}>
