@@ -12,6 +12,7 @@ import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Stack from 'react-bootstrap/Stack';
 import Spinner from 'react-bootstrap/Spinner'
+import ProgressBar from 'react-bootstrap/ProgressBar'
 
 
 // a plotly component, to create a heatmap in black and white. The use of memo makes it only rerender when the isEqual function is false
@@ -253,7 +254,7 @@ function BRAMControls(props) {
                 <Row>
                     <Stack gap={1}>
                         <InputGroup>
-                          <InputGroup.Text>Loop Point</InputGroup.Text>
+                          <InputGroup.Text>Counter Loop Point</InputGroup.Text>
                           <EndpointInput endpoint={props.periodicEndpoint} fullpath="application/bram/fw_control/counter_loop_point"/>
                         </InputGroup>
                         <InputGroup>
@@ -269,6 +270,46 @@ function BRAMControls(props) {
                 <Row>
                     <Col>
                         Count: <Badge>{props.periodicEndpoint.data.application.bram.fw_control.counter}</Badge>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col hidden={props.periodicEndpoint.data.application.bram.fw_control.counter_loop_point == 0 || !props.periodicEndpoint.data.application.bram.fw_control.loop_point_enabled}>
+                        To Loop Point
+                        <ProgressBar>
+                            <ProgressBar
+                                striped
+                                variant="success"
+                                now={props.periodicEndpoint.data.application.bram.fw_control.counter}
+                                max={props.periodicEndpoint.data.application.bram.fw_control.counter_loop_point}
+                                label={props.periodicEndpoint.data.application.bram.fw_control.counter+ "/" + props.periodicEndpoint.data.application.bram.fw_control.counter_loop_point}
+                            />
+                            <ProgressBar
+                                variant="secondary"
+                                now={props.periodicEndpoint.data.application.bram.fw_control.counter_loop_point - props.periodicEndpoint.data.application.bram.fw_control.counter}
+                                max={props.periodicEndpoint.data.application.bram.fw_control.counter_loop_point}
+                                key={2}
+                                visuallyHidden={props.periodicEndpoint.data.application.bram.fw_control.counter_loop_point > 0}
+                            />
+                        </ProgressBar>
+                    </Col>
+                    <Col>
+                        Full BRAM
+                        <ProgressBar>
+                            <ProgressBar
+                                striped
+                                variant="success"
+                                now={props.periodicEndpoint.data.application.bram.fw_control.counter}
+                                max={props.periodicEndpoint.data.application.bram.fw_control.max_count}
+                                key={1}
+                            />
+                            <ProgressBar
+                                variant="secondary"
+                                now={props.periodicEndpoint.data.application.bram.fw_control.counter_loop_point - props.periodicEndpoint.data.application.bram.fw_control.counter}
+                                max={props.periodicEndpoint.data.application.bram.fw_control.max_count}
+                                key={2}
+                                visuallyHidden={props.periodicEndpoint.data.application.bram.fw_control.counter_loop_point > 0}
+                            />
+                        </ProgressBar>
                     </Col>
                 </Row>
             </Stack>
