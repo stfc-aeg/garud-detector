@@ -178,6 +178,7 @@ function BitDepthInput(props) {
           type="range"
           min="1"
           max="13"
+          value={props.endpoint.data.application.debugreg.readout_depth}
         />
         <p
           style={{ width: "30px", marginLeft: "10px", display: "inline-block" }}
