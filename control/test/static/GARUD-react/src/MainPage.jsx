@@ -1,8 +1,8 @@
 import PowerDisplay from "./PowerSupplies";
-import { DropdownButton, Dropdown } from "react-bootstrap";
+import { DropdownButton, Dropdown, Row, Col, Button } from "react-bootstrap";
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { TitleCard } from "odin-react";
+import { TitleCard, WithEndpoint } from "odin-react";
 
 function ClockConfigSelect(props) {
   const [clockGenSetting, setClockGenSetting] = useState("Loading");
@@ -70,6 +70,35 @@ function ClockConfigSelect(props) {
   }
 }
 
+const InitialiseButton_Cycle = WithEndpoint(Button);
+const InitialiseButton_PSUsToggle = WithEndpoint(Button);
+const InitialiseButton_ASICRegsToggle = WithEndpoint(Button);
+function Initialisation(props) {
+    console.log('test')
+    console.log(props.periodicEndpoint);
+    console.log(props.periodicEndpoint.data);
+    if (props.periodicEndpoint != undefined) {
+        return(
+            <TitleCard title="Init Control">
+                <Row>
+                    <Col>
+                        <InitialiseButton_Cycle endpoint={props.periodicEndpoint} fullpath="application/main_control/initialise" value={true} variant={props.periodicEndpoint.data.application.main_control.initialise ? ("success") : ("danger")}>
+                        {props.periodicEndpoint.data.application.main_control.initialise ? ("Re-initialise") : (<b>Initialise</b>)}
+                        </InitialiseButton_Cycle>
+                    </Col>
+                    <Col>
+                        <InitialiseButton_ASICRegsToggle endpoint={props.periodicEndpoint} fullpath="application/main_control/autoinit_init_asic_regs" value={!props.periodicEndpoint.data.application.main_control.autoinit_init_asic_regs} variant={props.periodicEndpoint.data.application.main_control.autoinit_init_asic_regs ? ("success") : ("danger")}>
+                        {props.periodicEndpoint.data.application.main_control.autoinit_init_asic_regs ? ("ASIC Regulators will cycle") : (<b>ASIC Regulators won't cycle</b>)}
+                        </InitialiseButton_ASICRegsToggle>
+                    </Col>
+                </Row>
+            </TitleCard>
+        );
+    } else {
+        return <></>
+    }
+}
+
 export default function Main(props) {
   return (
     <div className="odin-server">
@@ -80,9 +109,17 @@ export default function Main(props) {
           </>
         }
       >
-        <PowerDisplay periodicEndpointPower={props.periodicEndpointPower} />
-        <br />
-        <ClockConfigSelect periodicEndpoint={props.periodicEndpoint} />
+        <Row>
+            <Col xxl={6}>
+                <Initialisation periodicEndpoint={props.periodicEndpoint} />
+            </Col>
+            <Col xxl={6}>
+                <ClockConfigSelect periodicEndpoint={props.periodicEndpoint} />
+            </Col>
+            <Col xxl={12}>
+                <PowerDisplay periodicEndpointPower={props.periodicEndpointPower} />
+            </Col>
+        </Row>
       </TitleCard>
       <br />
     </div>
