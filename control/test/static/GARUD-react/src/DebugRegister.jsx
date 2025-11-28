@@ -4,7 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles.css";
 import Plot from "react-plotly.js";
 import PixelGrid from "./PixelGrid";
-import { TitleCard } from "odin-react";
+import { TitleCard, WithEndpoint } from "odin-react";
 import Button from 'react-bootstrap/Button'
 import Spinner from 'react-bootstrap/Spinner'
 
@@ -190,6 +190,7 @@ function BitDepthInput(props) {
   );
 }
 
+const ADCReadButton_CounterTestEnableToggle = WithEndpoint(Button);
 export default function Debug_Register(props) {
   return (
     <div className="odin-server">
@@ -223,6 +224,12 @@ export default function Debug_Register(props) {
                       {"Function: debugreg_readout_adc"}
                     </span>
                   }
+                </div>
+                <div>
+                    <ADCReadButton_CounterTestEnableToggle endpoint={props.periodicEndpoint} fullpath="application/debugreg/adc_read_counter_testpattern_enable" value={!props.periodicEndpoint.data.application.debugreg.adc_read_counter_testpattern_enable} variant={props.periodicEndpoint.data.application.debugreg.adc_read_counter_testpattern_enable ? ("warning") : ("primary")}>
+                    {props.periodicEndpoint.data.application.debugreg.adc_read_counter_testpattern_enable ? (<b>Counter Test Input  Enabled</b>) : (<>Counter Test Input Disabled</>)}
+                    </ADCReadButton_CounterTestEnableToggle>
+
                 </div>
               </TitleCard>
             </div>
