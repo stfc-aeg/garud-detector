@@ -4,9 +4,12 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles.css";
 import Plot from "react-plotly.js";
 import PixelGrid from "./PixelGrid";
-import { TitleCard } from "odin-react";
+import { TitleCard, WithEndpoint } from "odin-react";
 import Button from 'react-bootstrap/Button'
 import Spinner from 'react-bootstrap/Spinner'
+import Row from 'react-bootstrap/Row'
+import Col from 'react-bootstrap/Col'
+import Stack from 'react-bootstrap/Stack'
 
 // a plotly component, to create a heatmap in black and white. The use of memo makes it only rerender when the isEqual function is false
 const Heatmap = React.memo((props) => {
@@ -178,6 +181,7 @@ function BitDepthInput(props) {
           type="range"
           min="1"
           max="13"
+          value={props.endpoint.data.application.debugreg.readout_depth}
         />
         <p
           style={{ width: "30px", marginLeft: "10px", display: "inline-block" }}
@@ -189,43 +193,58 @@ function BitDepthInput(props) {
   );
 }
 
+const ADCReadButton_CounterTestEnableToggle = WithEndpoint(Button);
 export default function Debug_Register(props) {
   return (
     <div className="odin-server">
       {Object.keys(props.periodicEndpoint.data).length > 0 ? (
         <>
           <TitleCard title="Menu">
-            <div style={{ width: "49%", float: "left" }}>
+          <Row>
+            <Col>
               <TitleCard title="Trigger Reads">
-                <div className="mytooltip">
-                  <TriggerReadButton
-                    endpoint={props.periodicEndpoint}
-                    trigger_key={"trigger_single_read"}
-                    name={"Single Read"}
-                    disabled={true}
-                  />
-                  {
-                    <span className="mytooltiptext">
-                      {"Function: debugreg_load_serialiser_test_pattern"}
-                    </span>
-                  }
-                </div>
-                <div style={{ width: "100%", height: "20px" }}></div>
-                <div className="mytooltip">
-                  <TriggerReadButton
-                    endpoint={props.periodicEndpoint}
-                    trigger_key={"trigger_adc_read"}
-                    name={"ADC Read"}
-                  />
-                  {
-                    <span className="mytooltiptext">
-                      {"Function: debugreg_readout_adc"}
-                    </span>
-                  }
-                </div>
+                <Row>
+                    <Col>
+                        <div className="mytooltip">
+                          <TriggerReadButton
+                            endpoint={props.periodicEndpoint}
+                            trigger_key={"trigger_single_read"}
+                            name={"Single Read"}
+                            disabled={true}
+                          />
+                          {
+                            <span className="mytooltiptext">
+                              {"Function: debugreg_load_serialiser_test_pattern"}
+                            </span>
+                          }
+                        </div>
+                    </Col>
+                    <Col>
+                        <Stack gap={1}>
+                            <div className="mytooltip">
+                              <TriggerReadButton
+                                endpoint={props.periodicEndpoint}
+                                trigger_key={"trigger_adc_read"}
+                                name={"ADC Read (" + props.periodicEndpoint.data.application.debugreg.readout_depth + " cycles)"}
+                              />
+                              {
+                                <span className="mytooltiptext">
+                                  {"Function: debugreg_readout_adc"}
+                                </span>
+                              }
+                            </div>
+                            <div>
+                                <ADCReadButton_CounterTestEnableToggle endpoint={props.periodicEndpoint} fullpath="application/debugreg/adc_read_counter_testpattern_enable" value={!props.periodicEndpoint.data.application.debugreg.adc_read_counter_testpattern_enable} variant={props.periodicEndpoint.data.application.debugreg.adc_read_counter_testpattern_enable ? ("warning") : ("primary")}>
+                                {props.periodicEndpoint.data.application.debugreg.adc_read_counter_testpattern_enable ? (<b>Counter Test Input  Enabled</b>) : (<>Counter Test Input Disabled</>)}
+                                </ADCReadButton_CounterTestEnableToggle>
+
+                            </div>
+                        </Stack>
+                    </Col>
+                </Row>
               </TitleCard>
-            </div>
-            <div style={{ width: "49%", float: "right" }}>
+            </Col>
+            <Col>
               <TitleCard title="Read settings">
                 <div className="mytooltip">
                   <BitAmountInput endpoint={props.periodicEndpoint} />
@@ -245,7 +264,8 @@ export default function Debug_Register(props) {
                   }
                 </div>
               </TitleCard>
-            </div>
+            </Col>
+          </Row>
           </TitleCard>
           <br />
           <PixelGrid

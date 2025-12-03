@@ -271,6 +271,9 @@ function BRAMControls(props) {
                     <Col>
                         Count: <Badge>{props.periodicEndpoint.data.application.bram.fw_control.counter}</Badge>
                     </Col>
+                    <Col>
+                        Bit pos: <Badge>{props.periodicEndpoint.data.application.bram.fw_control.bit_position}</Badge>
+                    </Col>
                 </Row>
                 <Row>
                     <Col hidden={props.periodicEndpoint.data.application.bram.fw_control.counter_loop_point == 0 || !props.periodicEndpoint.data.application.bram.fw_control.loop_point_enabled}>
